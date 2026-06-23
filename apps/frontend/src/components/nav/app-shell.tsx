@@ -67,8 +67,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </nav>
       </aside>
 
-      {/* Conteúdo */}
-      <main className="mx-auto w-full max-w-content px-4 pb-28 pt-5 sm:px-6 lg:pb-10 lg:pl-64 lg:pr-8">
+      {/* Conteúdo — safe-area no topo para não ficar sob o notch/barra de estado (PWA iOS) */}
+      <main className="mx-auto w-full max-w-content px-4 pb-28 pt-[calc(1.25rem+env(safe-area-inset-top))] sm:px-6 lg:pb-10 lg:pl-64 lg:pr-8 lg:pt-5">
         {children}
       </main>
 

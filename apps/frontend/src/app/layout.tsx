@@ -36,6 +36,8 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   viewportFit: 'cover',
+  // o teclado virtual reduz a área visível (em vez de tapar o conteúdo)
+  interactiveWidget: 'resizes-content',
 };
 
 export default function RootLayout({

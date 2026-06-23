@@ -12,7 +12,11 @@ interface ModalProps {
   children: React.ReactNode;
 }
 
-/** Diálogo: bottom-sheet no mobile, centrado no desktop. */
+/**
+ * Diálogo centrado. Centrado (e não colado ao fundo) para o teclado do telemóvel
+ * não tapar o conteúdo; com interactive-widget=resizes-content (ver layout), o
+ * teclado reduz a área visível e o modal fica sempre visível por cima.
+ */
 export function Modal({ open, onClose, title, children }: ModalProps) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
@@ -31,18 +35,18 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
     <AnimatePresence>
       {open ? (
         <motion.div
-          className="fixed inset-0 z-50 flex items-end justify-center sm:items-center"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
         >
           <div className="absolute inset-0 bg-black/60" onClick={onClose} />
           <motion.div
-            initial={{ y: 40, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 40, opacity: 0 }}
-            transition={{ type: 'spring', damping: 28, stiffness: 320 }}
-            className="safe-bottom relative z-10 max-h-[90dvh] w-full max-w-lg overflow-y-auto rounded-t-2xl border border-line bg-surface p-5 sm:rounded-2xl"
+            initial={{ scale: 0.96, opacity: 0, y: 8 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.96, opacity: 0, y: 8 }}
+            transition={{ type: 'spring', damping: 26, stiffness: 320 }}
+            className="relative z-10 max-h-[85dvh] w-full max-w-lg overflow-y-auto rounded-2xl border border-line bg-surface p-5"
           >
             <div className="mb-4 flex items-center justify-between">
               <h3 className="text-[17px] font-medium">{title}</h3>
