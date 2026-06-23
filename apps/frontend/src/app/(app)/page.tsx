@@ -3,7 +3,6 @@
 import { ArrowRight, Dumbbell, Flame, Utensils } from 'lucide-react';
 import Link from 'next/link';
 import { Card, Eyebrow, SectionTitle } from '@/components/ui/card';
-import { Dot } from '@/components/ui/misc';
 import { ProgressBar } from '@/components/ui/progress-bar';
 import { Ring } from '@/components/ui/ring';
 import { useDailyLog } from '@/hooks/use-meals';
@@ -11,6 +10,7 @@ import { usePlan, usePlans } from '@/hooks/use-plans';
 import { useAuthStore } from '@/lib/auth-store';
 import { fmt, todayISO, weekdayIndex } from '@/lib/format';
 import { muscleLabel } from '@/lib/labels';
+import { MACROS, type MacroMeta } from '@/lib/macros';
 import { sumMeals, targetsFromUser } from '@/lib/totals';
 
 const WEEKDAY_NAMES = [
@@ -69,24 +69,14 @@ export default function DashboardPage() {
               </span>
             </div>
             <div className="mt-4 flex flex-col gap-3">
-              <MacroLine
-                label="Proteína"
-                color="var(--protein)"
-                value={totals?.protein ?? 0}
-                max={targets.protein}
-              />
-              <MacroLine
-                label="Hidratos"
-                color="var(--carbs)"
-                value={totals?.carbs ?? 0}
-                max={targets.carbs}
-              />
-              <MacroLine
-                label="Gordura"
-                color="var(--fat)"
-                value={totals?.fat ?? 0}
-                max={targets.fat}
-              />
+              {MACROS.map((mm) => (
+                <MacroLine
+                  key={mm.key}
+                  meta={mm}
+                  value={totals?.[mm.key] ?? 0}
+                  max={targets[mm.key]}
+                />
+              ))}
             </div>
           </div>
         </Card>
@@ -159,28 +149,27 @@ export default function DashboardPage() {
 }
 
 function MacroLine({
-  label,
-  color,
+  meta,
   value,
   max,
 }: {
-  label: string;
-  color: string;
+  meta: MacroMeta;
   value: number;
   max: number;
 }) {
+  const Icon = meta.icon;
   return (
     <div>
       <div className="mb-1 flex items-center justify-between text-[13px]">
         <span className="flex items-center gap-1.5 text-text-muted">
-          <Dot color={color} />
-          {label}
+          <Icon className="h-3.5 w-3.5" style={{ color: meta.color }} strokeWidth={2.2} />
+          {meta.label}
         </span>
         <span className="tabular text-text-muted">
           {fmt(value)} / {fmt(max)} g
         </span>
       </div>
-      <ProgressBar value={value} max={max} color={color} />
+      <ProgressBar value={value} max={max} color={meta.color} />
     </div>
   );
 }

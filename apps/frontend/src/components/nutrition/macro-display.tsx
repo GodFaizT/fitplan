@@ -3,17 +3,11 @@
 import type { NutritionResult } from '@fitplan/shared';
 import { Cell, Pie, PieChart, ResponsiveContainer } from 'recharts';
 import { Card } from '@/components/ui/card';
-import { Dot } from '@/components/ui/misc';
 import { fmt } from '@/lib/format';
-
-const MACRO_META = [
-  { key: 'protein', label: 'Proteína', color: 'var(--protein)' },
-  { key: 'carbs', label: 'Hidratos', color: 'var(--carbs)' },
-  { key: 'fat', label: 'Gordura', color: 'var(--fat)' },
-] as const;
+import { MACROS } from '@/lib/macros';
 
 export function MacroDonut({ result }: { result: NutritionResult }) {
-  const data = MACRO_META.map((m) => ({
+  const data = MACROS.map((m) => ({
     name: m.label,
     value: result.macroCalories[m.key],
     color: m.color,
@@ -52,21 +46,28 @@ export function MacroDonut({ result }: { result: NutritionResult }) {
 export function MacroCards({ result }: { result: NutritionResult }) {
   return (
     <div className="grid grid-cols-3 gap-3">
-      {MACRO_META.map((m) => (
-        <Card key={m.key} className="p-3 sm:p-4">
-          <div className="flex items-center gap-1.5">
-            <Dot color={m.color} />
-            <span className="text-[12px] text-text-muted">{m.label}</span>
-          </div>
-          <p className="mt-2 text-xl font-medium tabular">
-            {fmt(result.macros[m.key])}
-            <span className="ml-0.5 text-sm text-text-muted">g</span>
-          </p>
-          <p className="text-[12px] text-text-muted">
-            {result.macroPercents[m.key]}%
-          </p>
-        </Card>
-      ))}
+      {MACROS.map((m) => {
+        const Icon = m.icon;
+        return (
+          <Card key={m.key} className="p-3 sm:p-4">
+            <div className="flex items-center gap-1.5">
+              <Icon
+                className="h-3.5 w-3.5"
+                style={{ color: m.color }}
+                strokeWidth={2.2}
+              />
+              <span className="text-[12px] text-text-muted">{m.label}</span>
+            </div>
+            <p className="mt-2 text-xl font-medium tabular">
+              {fmt(result.macros[m.key])}
+              <span className="ml-0.5 text-sm text-text-muted">g</span>
+            </p>
+            <p className="text-[12px] text-text-muted">
+              {result.macroPercents[m.key]}%
+            </p>
+          </Card>
+        );
+      })}
     </div>
   );
 }

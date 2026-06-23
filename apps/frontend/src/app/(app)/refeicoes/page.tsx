@@ -13,7 +13,7 @@ import { AddFoodModal, type NewFoodItem } from '@/components/meals/add-food-moda
 import { Button } from '@/components/ui/button';
 import { Card, Eyebrow, SectionTitle } from '@/components/ui/card';
 import { Field, Input } from '@/components/ui/input';
-import { Dot, EmptyState, Skeleton } from '@/components/ui/misc';
+import { EmptyState, Skeleton } from '@/components/ui/misc';
 import { Modal } from '@/components/ui/modal';
 import { ProgressBar } from '@/components/ui/progress-bar';
 import { Ring } from '@/components/ui/ring';
@@ -23,6 +23,8 @@ import { useAuthStore } from '@/lib/auth-store';
 import { foodIcon } from '@/lib/food-icon';
 import { addDays, dateLabel, fmt, todayISO } from '@/lib/format';
 import { MEAL_TYPE_LABELS, MEAL_TYPES } from '@/lib/labels';
+import { MACROS, type MacroMeta } from '@/lib/macros';
+import { mealIcon } from '@/lib/meal-icon';
 import { sumMeals, targetsFromUser } from '@/lib/totals';
 
 export default function MealsPage() {
@@ -81,9 +83,14 @@ export default function MealsPage() {
             <span className="text-[12px] text-text-muted">de {fmt(targets.calories)}</span>
           </Ring>
           <div className="w-full flex-1 space-y-3">
-            <Bar label="Proteína" color="var(--protein)" value={totals?.protein ?? 0} max={targets.protein} />
-            <Bar label="Hidratos" color="var(--carbs)" value={totals?.carbs ?? 0} max={targets.carbs} />
-            <Bar label="Gordura" color="var(--fat)" value={totals?.fat ?? 0} max={targets.fat} />
+            {MACROS.map((mm) => (
+              <Bar
+                key={mm.key}
+                meta={mm}
+                value={totals?.[mm.key] ?? 0}
+                max={targets[mm.key]}
+              />
+            ))}
           </div>
         </Card>
       )}
@@ -95,16 +102,22 @@ export default function MealsPage() {
         <div className="flex flex-col gap-3">
           {log.data.meals.map((meal) => {
             const mt = sumMeals([meal]);
+            const MealIcon = mealIcon(meal.type);
             return (
               <Card key={meal.id} className="p-4">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">
-                      {meal.label || MEAL_TYPE_LABELS[meal.type] || 'Refeição'}
-                    </p>
-                    <p className="text-[12px] text-text-muted">
-                      {MEAL_TYPE_LABELS[meal.type]} · {fmt(mt.calories)} kcal
-                    </p>
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent">
+                      <MealIcon className="h-5 w-5" strokeWidth={1.8} />
+                    </div>
+                    <div>
+                      <p className="font-medium">
+                        {meal.label || MEAL_TYPE_LABELS[meal.type] || 'Refeição'}
+                      </p>
+                      <p className="text-[12px] text-text-muted">
+                        {MEAL_TYPE_LABELS[meal.type]} · {fmt(mt.calories)} kcal
+                      </p>
+                    </div>
                   </div>
                   <button
                     onClick={() => m.deleteMeal.mutate(meal.id)}
@@ -187,28 +200,27 @@ export default function MealsPage() {
 }
 
 function Bar({
-  label,
-  color,
+  meta,
   value,
   max,
 }: {
-  label: string;
-  color: string;
+  meta: MacroMeta;
   value: number;
   max: number;
 }) {
+  const Icon = meta.icon;
   return (
     <div>
       <div className="mb-1 flex items-center justify-between text-[13px]">
         <span className="flex items-center gap-1.5 text-text-muted">
-          <Dot color={color} />
-          {label}
+          <Icon className="h-3.5 w-3.5" style={{ color: meta.color }} strokeWidth={2.2} />
+          {meta.label}
         </span>
         <span className="tabular text-text-muted">
           {fmt(value)} / {fmt(max)} g
         </span>
       </div>
-      <ProgressBar value={value} max={max} color={color} />
+      <ProgressBar value={value} max={max} color={meta.color} />
     </div>
   );
 }
@@ -229,19 +241,23 @@ function AddMealModal({
       <div className="flex flex-col gap-4">
         <Field label="Tipo">
           <div className="grid grid-cols-3 gap-2">
-            {MEAL_TYPES.map((t) => (
-              <button
-                key={t}
-                onClick={() => setType(t)}
-                className={`rounded-lg px-2 py-2 text-sm transition ${
-                  type === t
-                    ? 'bg-accent text-accent-text'
-                    : 'bg-surface-2 text-text-muted hover:text-text'
-                }`}
-              >
-                {MEAL_TYPE_LABELS[t]}
-              </button>
-            ))}
+            {MEAL_TYPES.map((t) => {
+              const Icon = mealIcon(t);
+              return (
+                <button
+                  key={t}
+                  onClick={() => setType(t)}
+                  className={`flex flex-col items-center gap-1 rounded-lg px-2 py-2.5 text-[13px] transition ${
+                    type === t
+                      ? 'bg-accent text-accent-text'
+                      : 'bg-surface-2 text-text-muted hover:text-text'
+                  }`}
+                >
+                  <Icon className="h-4 w-4" strokeWidth={1.8} />
+                  {MEAL_TYPE_LABELS[t]}
+                </button>
+              );
+            })}
           </div>
         </Field>
         <Field label="Nome (opcional)">
