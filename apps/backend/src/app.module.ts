@@ -6,6 +6,7 @@ import { ExercisesModule } from './exercises/exercises.module';
 import { FoodsModule } from './foods/foods.module';
 import { MealsModule } from './meals/meals.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { SeedModule } from './seed/seed.module';
 import { UsersModule } from './users/users.module';
 import { WorkoutsModule } from './workouts/workouts.module';
 
@@ -20,6 +21,7 @@ import { WorkoutsModule } from './workouts/workouts.module';
     MealsModule,
     ExercisesModule,
     WorkoutsModule,
+    SeedModule,
   ],
 })
 export class AppModule {}

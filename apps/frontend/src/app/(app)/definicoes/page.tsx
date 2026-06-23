@@ -5,6 +5,7 @@ import { useTheme } from 'next-themes';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { AdminPanel } from '@/components/admin/admin-panel';
+import { ChangePassword } from '@/components/settings/change-password';
 import { Button } from '@/components/ui/button';
 import { Card, Eyebrow, SectionTitle } from '@/components/ui/card';
 import { Field, Input } from '@/components/ui/input';
@@ -81,6 +82,8 @@ export default function SettingsPage() {
         </Field>
         <div className="text-sm text-text-muted">{user?.email}</div>
       </Card>
+
+      <ChangePassword />
 
       <Card className="flex flex-col gap-4">
         <SectionTitle className="text-[15px]">Unidades</SectionTitle>

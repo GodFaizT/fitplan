@@ -28,13 +28,14 @@ Variáveis de ambiente:
 
 - O Dockerfile corre `prisma migrate deploy` no arranque.
 - Associa um subdomínio (ex: `api.oteudominio.com`).
-- **Seeds (uma vez):** após o primeiro deploy, corre numa shell com o
-  `DATABASE_URL` de produção:
+- **Seeds:** o backend **semeia automaticamente** no arranque a biblioteca de
+  exercícios (Free Exercise DB) e o catálogo de alimentos comuns, se as tabelas
+  estiverem vazias (idempotente). Não é preciso passo manual. Para semear à mão
+  (ex: contra outra BD), continua disponível:
   ```bash
-  npm run seed:exercises -w @fitplan/backend   # biblioteca de exercícios (873)
-  npm run seed:foods -w @fitplan/backend        # catálogo de alimentos comuns (54)
+  npm run seed:exercises -w @fitplan/backend
+  npm run seed:foods -w @fitplan/backend
   ```
-  (Podes corrê-los a partir da tua máquina apontando `DATABASE_URL` para a BD de produção.)
 
 ## 3. Frontend (Next.js)
 
