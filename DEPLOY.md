@@ -52,6 +52,28 @@ Aplicação a partir do Git, build pelo `apps/frontend/Dockerfile`.
 - **HTTPS** é obrigatório para a PWA (service worker) — garantido pelo Dokploy ao associar domínios.
 - Testa a instalação real em iPhone (Safari) e Android (Chrome) antes de dar como concluído.
 
+## Sem domínio (só IP do VPS)
+
+Funciona, mas sobre HTTP simples (sem HTTPS). Limitações: a **PWA não instala**
+nem funciona offline (exige HTTPS). O login funciona se desativares o cookie Secure.
+
+- No Dokploy, expõe as portas dos contentores ao host (em vez de associar domínio):
+  backend → host `3001`, frontend → host `3000`. Abre o firewall do VPS para essas portas.
+- **Backend** env:
+  ```
+  CORS_ORIGIN=http://IP-DO-VPS:3000
+  COOKIE_SECURE=false
+  PORT=3001
+  ```
+- **Frontend** build arg:
+  ```
+  NEXT_PUBLIC_API_URL=http://IP-DO-VPS:3001/api
+  ```
+- Acede em `http://IP-DO-VPS:3000`.
+
+Para a experiência completa (HTTPS + PWA instalável), aponta um domínio ao IP e
+associa-o no Dokploy — o HTTPS é automático (Traefik + Let's Encrypt).
+
 ## Teste local com Docker
 
 ```bash

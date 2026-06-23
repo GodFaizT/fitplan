@@ -101,11 +101,21 @@ export class AuthController {
     const days = Number(this.config.get<string>('JWT_REFRESH_TTL_DAYS') ?? '30');
     res.cookie(REFRESH_COOKIE, token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: this.cookieSecure(),
       sameSite: 'lax',
       path: '/api/auth',
       maxAge: days * 24 * 60 * 60 * 1000,
     });
+  }
+
+  /**
+   * Cookie `Secure` exige HTTPS. Em produção com domínio/HTTPS deixar a true.
+   * Para correr sobre http://IP (sem domínio) define COOKIE_SECURE=false.
+   */
+  private cookieSecure(): boolean {
+    const explicit = this.config.get<string>('COOKIE_SECURE');
+    if (explicit != null) return explicit === 'true';
+    return process.env.NODE_ENV === 'production';
   }
 
   private clearRefreshCookie(res: Response): void {
