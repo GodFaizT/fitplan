@@ -11,8 +11,10 @@ RUN npm ci
 COPY packages/shared packages/shared
 RUN npm run build -w @fitplan/shared
 COPY apps/frontend apps/frontend
-# NEXT_PUBLIC_* é embebido no bundle em build-time — passar via build arg
-ARG NEXT_PUBLIC_API_URL=http://localhost:3001/api
+# NEXT_PUBLIC_* é embebido no bundle em build-time.
+# Default RELATIVO "/api" → mesma origem (path-based). Para subdomínios
+# separados, passar o URL absoluto como build-arg.
+ARG NEXT_PUBLIC_API_URL=/api
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 RUN npm run build -w @fitplan/frontend
 
