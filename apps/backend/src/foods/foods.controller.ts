@@ -24,6 +24,12 @@ export class FoodsController {
     return this.foods.list(user.id, search);
   }
 
+  /** Catálogo global de alimentos comuns predefinidos. */
+  @Get('library')
+  listLibrary(@Query('search') search?: string) {
+    return this.foods.listLibrary(search);
+  }
+
   @Post()
   create(@CurrentUser() user: AuthUser, @Body() dto: CreateFoodDto) {
     return this.foods.create(user.id, dto);

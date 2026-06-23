@@ -45,6 +45,7 @@ npm run test:shared         # corre os testes da lógica de nutrição (18)
 # backend (ver apps/backend/.env)
 npm run prisma:migrate -w @fitplan/backend
 npm run seed:exercises -w @fitplan/backend   # uma vez (873 exercícios)
+npm run seed:foods -w @fitplan/backend       # uma vez (54 alimentos comuns)
 npm run dev:backend
 
 # frontend (ver apps/frontend/.env.local) — noutro terminal

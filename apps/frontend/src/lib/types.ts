@@ -63,6 +63,11 @@ export interface SavedFood {
   fat: number;
 }
 
+/** Alimento do catálogo global predefinido (leitura). */
+export interface CatalogFood extends SavedFood {
+  category: string | null;
+}
+
 export interface LibraryExercise {
   id: string;
   slug: string;

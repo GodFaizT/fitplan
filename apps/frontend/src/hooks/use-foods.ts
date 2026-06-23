@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { qk } from '@/lib/query-keys';
-import type { SavedFood } from '@/lib/types';
+import type { CatalogFood, SavedFood } from '@/lib/types';
 
 export function useSavedFoods(search: string) {
   return useQuery({
@@ -12,6 +12,18 @@ export function useSavedFoods(search: string) {
       api.get<SavedFood[]>(
         `/foods${search ? `?search=${encodeURIComponent(search)}` : ''}`,
       ),
+  });
+}
+
+/** Catálogo global de alimentos comuns predefinidos. */
+export function useFoodLibrary(search: string) {
+  return useQuery({
+    queryKey: ['food-library', search],
+    queryFn: () =>
+      api.get<CatalogFood[]>(
+        `/foods/library${search ? `?search=${encodeURIComponent(search)}` : ''}`,
+      ),
+    staleTime: 1000 * 60 * 60,
   });
 }
 

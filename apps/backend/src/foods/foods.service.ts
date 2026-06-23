@@ -19,6 +19,16 @@ export class FoodsService {
     });
   }
 
+  /** Catálogo global de alimentos comuns (leitura, predefinidos). PROJECT.md 5.4. */
+  listLibrary(search?: string) {
+    return this.prisma.foodLibrary.findMany({
+      where: search
+        ? { name: { contains: search, mode: 'insensitive' as const } }
+        : undefined,
+      orderBy: [{ category: 'asc' }, { name: 'asc' }],
+    });
+  }
+
   create(userId: string, dto: CreateFoodDto) {
     return this.prisma.savedFood.create({ data: { ...dto, userId } });
   }

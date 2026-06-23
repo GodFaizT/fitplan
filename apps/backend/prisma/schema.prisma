@@ -188,6 +188,20 @@ model ExerciseLibrary {
   @@index([name])
 }
 
+model FoodLibrary {
+  id       String  @id @default(cuid())
+  name     String
+  category String? // Proteínas | Hidratos | Lacticínios | Fruta | Vegetais | Gorduras | Outros
+  per      Float // base de referência (ex: 100)
+  unit     String // ex: "g", "ml"
+  calories Float // por `per` `unit`
+  protein  Float
+  carbs    Float
+  fat      Float
+
+  @@index([name])
+}
+
 model WeightEntry {
   id       String   @id @default(cuid())
   userId   String

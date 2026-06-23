@@ -6,9 +6,8 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Field, Input } from '@/components/ui/input';
 import { Modal } from '@/components/ui/modal';
-import { useFoodMutations, useSavedFoods } from '@/hooks/use-foods';
+import { useFoodLibrary, useFoodMutations, useSavedFoods } from '@/hooks/use-foods';
 import { fmt } from '@/lib/format';
-import type { SavedFood } from '@/lib/types';
 
 export interface NewFoodItem {
   name: string;
@@ -18,6 +17,18 @@ export interface NewFoodItem {
   protein: number;
   carbs: number;
   fat: number;
+}
+
+interface Suggestion {
+  id: string;
+  name: string;
+  per: number;
+  unit: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  source: 'meu' | 'catalogo';
 }
 
 export function AddFoodModal({
@@ -31,6 +42,7 @@ export function AddFoodModal({
 }) {
   const [search, setSearch] = useState('');
   const saved = useSavedFoods(search);
+  const catalog = useFoodLibrary(search);
   const { create } = useFoodMutations();
 
   const [name, setName] = useState('');
@@ -44,7 +56,13 @@ export function AddFoodModal({
   const [saveToLib, setSaveToLib] = useState(false);
   const [busy, setBusy] = useState(false);
 
-  function pick(f: SavedFood) {
+  // alimentos pessoais primeiro, depois o catálogo comum
+  const suggestions: Suggestion[] = [
+    ...(saved.data ?? []).map((f) => ({ ...f, source: 'meu' as const })),
+    ...(catalog.data ?? []).map((f) => ({ ...f, source: 'catalogo' as const })),
+  ];
+
+  function pick(f: Suggestion) {
     setName(f.name);
     setPer(f.per);
     setUnit(f.unit);
@@ -54,7 +72,6 @@ export function AddFoodModal({
     setFat(f.fat);
     setQuantity(f.per);
     setSaveToLib(false);
-    setSearch('');
   }
 
   function reset() {
@@ -99,33 +116,46 @@ export function AddFoodModal({
   return (
     <Modal open={open} onClose={onClose} title="Adicionar alimento">
       <div className="flex flex-col gap-4">
-        {/* Autocomplete da biblioteca pessoal */}
+        {/* Pesquisa no catálogo comum + biblioteca pessoal */}
         <div className="relative">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted" />
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Pesquisar na tua biblioteca…"
+            placeholder="Pesquisar (arroz, frango, ovos…)"
             className="pl-9"
           />
-          {search && saved.data && saved.data.length > 0 ? (
-            <div className="absolute z-10 mt-1 max-h-48 w-full overflow-y-auto rounded-xl border border-line bg-surface-2 p-1">
-              {saved.data.map((f) => (
-                <button
-                  key={f.id}
-                  onClick={() => pick(f)}
-                  className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm hover:bg-surface"
-                >
-                  <span>{f.name}</span>
-                  <span className="text-text-muted">
-                    {fmt(f.calories)} kcal / {f.per}
-                    {f.unit}
-                  </span>
-                </button>
-              ))}
-            </div>
-          ) : null}
         </div>
+
+        {suggestions.length > 0 ? (
+          <div className="max-h-52 overflow-y-auto rounded-xl border border-line">
+            {suggestions.map((f) => (
+              <button
+                key={`${f.source}-${f.id}`}
+                onClick={() => pick(f)}
+                className="flex w-full items-center justify-between gap-2 border-b border-line px-3 py-2 text-left text-sm last:border-0 hover:bg-surface-2"
+              >
+                <span className="flex items-center gap-2">
+                  {f.source === 'meu' ? (
+                    <span className="rounded bg-accent/15 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-accent">
+                      Meu
+                    </span>
+                  ) : null}
+                  <span className="truncate">{f.name}</span>
+                </span>
+                <span className="shrink-0 text-text-muted">
+                  {fmt(f.calories)} kcal / {f.per}
+                  {f.unit}
+                </span>
+              </button>
+            ))}
+          </div>
+        ) : null}
+
+        <div className="h-px bg-line" />
+        <p className="-mb-2 text-[12px] text-text-muted">
+          Ou insere/ajusta os valores:
+        </p>
 
         <Field label="Nome">
           <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="ex: Peito de frango" />

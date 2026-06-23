@@ -13,6 +13,7 @@
     "prisma:deploy": "prisma migrate deploy",
     "prisma:studio": "prisma studio",
     "seed:exercises": "ts-node prisma/seed.ts",
+    "seed:foods": "ts-node prisma/seed-foods.ts",
     "test": "echo \"(sem testes de backend ainda)\" && exit 0"
   },
   "prisma": {
