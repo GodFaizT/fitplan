@@ -32,6 +32,12 @@ Thumbs.db
 # prisma
 prisma/*.db
 
+# artefactos de teste do browser (Playwright MCP)
+.playwright-mcp/
+/dashboard-empty.png
+/dashboard-targets.png
+/nutricao.png
+
 # serwist (service worker gerado)
 apps/frontend/public/sw.js
 apps/frontend/public/sw.js.map
