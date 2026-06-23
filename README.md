@@ -26,18 +26,32 @@ apps/
 
 ## Desenvolvimento
 
-Pré-requisitos: Node ≥ 20, PostgreSQL a correr localmente.
+Pré-requisitos: Node ≥ 20, PostgreSQL.
+
+Em dev local, a base de dados corre num cluster dedicado em **localhost:5433**
+(BD `fitplan`). Se não estiver a correr (ex: após reiniciar o PC):
+
+```bash
+pwsh -File scripts/start-db.ps1
+```
+
+Portas: frontend **3000**, API **3001**, PostgreSQL **5433**.
 
 ```bash
 npm install                 # instala todas as workspaces
 npm run build:shared        # compila o pacote shared
-npm run test:shared         # corre os testes da lógica de nutrição
+npm run test:shared         # corre os testes da lógica de nutrição (18)
 
-# backend (ver apps/backend/.env.example)
-npm run prisma:migrate
-npm run seed:exercises
+# backend (ver apps/backend/.env)
+npm run prisma:migrate -w @fitplan/backend
+npm run seed:exercises -w @fitplan/backend   # uma vez (873 exercícios)
 npm run dev:backend
 
-# frontend (ver apps/frontend/.env.example)
+# frontend (ver apps/frontend/.env.local) — noutro terminal
 npm run dev:frontend
 ```
+
+## Deploy
+
+Ver [`DEPLOY.md`](./DEPLOY.md) — três serviços no Dokploy (Postgres + backend + frontend),
+Dockerfiles em `apps/*/Dockerfile`, ou `docker compose up --build` para teste local.

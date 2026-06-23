@@ -1,0 +1,47 @@
+# Referência para deploy (e teste local com `docker compose up --build`).
+# No Dokploy podes usar este compose ou criar 3 serviços separados (ver DEPLOY.md).
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: fitplan
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-fitplan}
+      POSTGRES_DB: fitplan
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://fitplan:${POSTGRES_PASSWORD:-fitplan}@postgres:5432/fitplan?schema=public
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-change-me-access}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-change-me-refresh}
+      JWT_ACCESS_TTL: 15m
+      JWT_REFRESH_TTL_DAYS: "30"
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
+      PORT: "3001"
+      USE_REFRESH_COOKIE: "true"
+    depends_on:
+      - postgres
+    ports:
+      - "3001:3001"
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: apps/frontend/Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001/api}
+    depends_on:
+      - backend
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+
+volumes:
+  pgdata:

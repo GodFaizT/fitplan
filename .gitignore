@@ -31,3 +31,8 @@ Thumbs.db
 
 # prisma
 prisma/*.db
+
+# serwist (service worker gerado)
+apps/frontend/public/sw.js
+apps/frontend/public/sw.js.map
+apps/frontend/public/swe-worker-*.js

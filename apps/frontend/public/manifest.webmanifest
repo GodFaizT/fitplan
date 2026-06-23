@@ -1,0 +1,30 @@
+{
+  "name": "FitPlan — Fitness Pessoal",
+  "short_name": "FitPlan",
+  "description": "Calculadora de nutrição, registo de refeições e planos de treino.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#1A1C1E",
+  "theme_color": "#1A1C1E",
+  "lang": "pt",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

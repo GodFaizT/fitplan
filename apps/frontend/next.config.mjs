@@ -1,6 +1,10 @@
+import withSerwistInit from '@serwist/next';
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  // imagem Docker slim para o deploy (PROJECT.md secção 12)
+  output: 'standalone',
   // consome o pacote de lógica partilhada diretamente do workspace
   transpilePackages: ['@fitplan/shared'],
   // ESLint não está configurado neste projeto; não bloquear o build com lint
@@ -14,4 +18,11 @@ const nextConfig = {
   },
 };
 
-export default nextConfig;
+const withSerwist = withSerwistInit({
+  swSrc: 'src/app/sw.ts',
+  swDest: 'public/sw.js',
+  // service worker desativado em desenvolvimento (evita cache agressiva)
+  disable: process.env.NODE_ENV === 'development',
+});
+
+export default withSerwist(nextConfig);
