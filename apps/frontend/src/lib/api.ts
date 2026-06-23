@@ -14,20 +14,35 @@ export class ApiError extends Error {
   }
 }
 
-/** Troca o refresh cookie por um novo access token. Atualiza o store. */
-async function tryRefresh(): Promise<boolean> {
-  try {
-    const res = await fetch(`${API_URL}/auth/refresh`, {
-      method: 'POST',
-      credentials: 'include',
-    });
-    if (!res.ok) return false;
-    const data = (await res.json()) as AuthResponse;
-    useAuthStore.getState().setAuth(data.accessToken, data.user);
-    return true;
-  } catch {
-    return false;
-  }
+/**
+ * Troca o refresh cookie por um novo access token. Atualiza o store.
+ *
+ * Os refresh tokens são rodados no backend (cada refresh invalida o anterior),
+ * por isso desduplicamos chamadas concorrentes: todas partilham a mesma promise
+ * para garantir uma única rotação (evita 401 espúrios com StrictMode / pedidos
+ * 401 simultâneos).
+ */
+let refreshInFlight: Promise<boolean> | null = null;
+
+function tryRefresh(): Promise<boolean> {
+  if (refreshInFlight) return refreshInFlight;
+  refreshInFlight = (async () => {
+    try {
+      const res = await fetch(`${API_URL}/auth/refresh`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      if (!res.ok) return false;
+      const data = (await res.json()) as AuthResponse;
+      useAuthStore.getState().setAuth(data.accessToken, data.user);
+      return true;
+    } catch {
+      return false;
+    } finally {
+      refreshInFlight = null;
+    }
+  })();
+  return refreshInFlight;
 }
 
 /**
