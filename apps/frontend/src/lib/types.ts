@@ -74,6 +74,7 @@ export interface LibraryExercise {
   id: string;
   slug: string;
   name: string;
+  namePt: string | null;
   category: string | null;
   level: string | null;
   force: string | null;
@@ -82,6 +83,7 @@ export interface LibraryExercise {
   primaryMuscles: string[];
   secondaryMuscles: string[];
   instructions: string[];
+  instructionsPt: string[];
   imageUrls: string[];
 }
 

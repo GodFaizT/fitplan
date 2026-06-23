@@ -17,7 +17,10 @@ export class ExercisesService {
   list(query: ExerciseQuery) {
     const where: Prisma.ExerciseLibraryWhereInput = {};
     if (query.search) {
-      where.name = { contains: query.search, mode: 'insensitive' };
+      where.OR = [
+        { name: { contains: query.search, mode: 'insensitive' } },
+        { namePt: { contains: query.search, mode: 'insensitive' } },
+      ];
     }
     if (query.muscle) {
       where.primaryMuscles = { has: query.muscle };

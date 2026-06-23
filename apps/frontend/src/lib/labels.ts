@@ -77,3 +77,37 @@ export function muscleLabel(m?: string | null): string {
   if (!m) return '—';
   return MUSCLE_LABELS[m] ?? m.charAt(0).toUpperCase() + m.slice(1);
 }
+
+/** Equipamento (Free Exercise DB → PT). */
+export const EQUIPMENT_LABELS: Record<string, string> = {
+  'body only': 'só corpo',
+  dumbbell: 'haltere',
+  barbell: 'barra',
+  cable: 'cabo',
+  machine: 'máquina',
+  kettlebells: 'kettlebell',
+  bands: 'elásticos',
+  'medicine ball': 'bola medicinal',
+  'exercise ball': 'bola de pilates',
+  'foam roll': 'rolo de espuma',
+  'e-z curl bar': 'barra W',
+  other: 'outro',
+  none: 'nenhum',
+};
+
+export function equipmentLabel(e?: string | null): string | null {
+  if (!e) return null;
+  return EQUIPMENT_LABELS[e] ?? e;
+}
+
+/** Nível (Free Exercise DB → PT). */
+export const LEVEL_LABELS: Record<string, string> = {
+  beginner: 'iniciante',
+  intermediate: 'intermédio',
+  expert: 'avançado',
+};
+
+export function levelLabel(l?: string | null): string | null {
+  if (!l) return null;
+  return LEVEL_LABELS[l] ?? l;
+}

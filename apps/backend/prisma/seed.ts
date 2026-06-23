@@ -9,8 +9,20 @@
  * robustez total, copiar as imagens para um volume/bucket próprio — ver 6.4.
  */
 import { PrismaClient } from '@prisma/client';
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
 
 const prisma = new PrismaClient();
+
+function loadTranslations(): Record<string, { name: string; instructions: string[] }> {
+  try {
+    return JSON.parse(
+      readFileSync(path.join(__dirname, 'exercises-pt.json'), 'utf8'),
+    );
+  } catch {
+    return {};
+  }
+}
 
 const SOURCE =
   'https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/dist/exercises.json';
@@ -40,19 +52,25 @@ async function main(): Promise<void> {
   const data = (await res.json()) as RawExercise[];
   console.log(`Recebidos ${data.length} exercícios.`);
 
-  const rows = data.map((e) => ({
-    slug: e.id,
-    name: e.name,
-    category: e.category ?? null,
-    level: e.level ?? null,
-    force: e.force ?? null,
-    mechanic: e.mechanic ?? null,
-    equipment: e.equipment ?? null,
-    primaryMuscles: e.primaryMuscles ?? [],
-    secondaryMuscles: e.secondaryMuscles ?? [],
-    instructions: e.instructions ?? [],
-    imageUrls: (e.images ?? []).map((p) => IMAGE_BASE + p),
-  }));
+  const pt = loadTranslations();
+  const rows = data.map((e) => {
+    const t = pt[e.id];
+    return {
+      slug: e.id,
+      name: e.name,
+      namePt: t?.name ?? null,
+      category: e.category ?? null,
+      level: e.level ?? null,
+      force: e.force ?? null,
+      mechanic: e.mechanic ?? null,
+      equipment: e.equipment ?? null,
+      primaryMuscles: e.primaryMuscles ?? [],
+      secondaryMuscles: e.secondaryMuscles ?? [],
+      instructions: e.instructions ?? [],
+      instructionsPt: t?.instructions ?? [],
+      imageUrls: (e.images ?? []).map((p) => IMAGE_BASE + p),
+    };
+  });
 
   // biblioteca estática: limpar e reinserir torna o seed idempotente
   await prisma.exerciseLibrary.deleteMany({});

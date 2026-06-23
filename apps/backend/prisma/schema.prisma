@@ -179,6 +179,7 @@ model ExerciseLibrary {
   id               String   @id @default(cuid())
   slug             String   @unique
   name             String
+  namePt           String? // nome traduzido (PT)
   category         String?
   level            String?
   force            String?
@@ -187,6 +188,7 @@ model ExerciseLibrary {
   primaryMuscles   String[]
   secondaryMuscles String[]
   instructions     String[]
+  instructionsPt   String[] // instruções traduzidas (PT)
   imageUrls        String[]
 
   @@index([name])

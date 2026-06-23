@@ -8,7 +8,7 @@ import { Skeleton } from '@/components/ui/misc';
 import { Modal } from '@/components/ui/modal';
 import { Segmented } from '@/components/ui/segmented';
 import { useExerciseFacets, useExerciseSearch } from '@/hooks/use-exercises';
-import { muscleLabel } from '@/lib/labels';
+import { equipmentLabel, muscleLabel } from '@/lib/labels';
 import type { LibraryExercise, PlanExercise } from '@/lib/types';
 
 export type NewExercise = Partial<PlanExercise> & {
@@ -97,10 +97,10 @@ export function ExercisePicker({
     try {
       await onAdd({
         libraryId: ex.id,
-        name: ex.name,
+        name: ex.namePt ?? ex.name,
         muscleGroup: ex.primaryMuscles[0] ?? null,
         imageUrls: ex.imageUrls,
-        instructions: ex.instructions,
+        instructions: ex.instructionsPt.length ? ex.instructionsPt : ex.instructions,
         ...p,
       });
       setSelected(null);
@@ -185,10 +185,12 @@ export function ExercisePicker({
                         <div className="h-12 w-12 rounded-lg bg-surface-2" />
                       )}
                       <div className="min-w-0">
-                        <p className="truncate text-sm">{ex.name}</p>
+                        <p className="truncate text-sm">{ex.namePt ?? ex.name}</p>
                         <p className="text-[12px] text-text-muted">
                           {muscleLabel(ex.primaryMuscles[0])}
-                          {ex.equipment ? ` · ${ex.equipment}` : ''}
+                          {equipmentLabel(ex.equipment)
+                            ? ` · ${equipmentLabel(ex.equipment)}`
+                            : ''}
                         </p>
                       </div>
                     </button>

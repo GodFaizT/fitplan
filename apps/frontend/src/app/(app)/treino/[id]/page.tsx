@@ -77,6 +77,14 @@ function PlanDetailInner() {
     }
   }
 
+  async function onDeletePlan() {
+    if (!confirm(`Eliminar o plano "${p.name}"? Esta ação não pode ser anulada.`)) {
+      return;
+    }
+    await mut.deletePlan.mutateAsync(planId);
+    router.push('/treino');
+  }
+
   return (
     <div className="flex flex-col gap-5">
       {/* Header */}
@@ -99,9 +107,20 @@ function PlanDetailInner() {
             <Play className="h-4 w-4" /> Treino
           </Button>
           {mine ? (
-            <Button variant="secondary" size="icon" onClick={onShare} aria-label="Partilhar">
-              <Share2 className="h-4 w-4" />
-            </Button>
+            <>
+              <Button variant="secondary" size="icon" onClick={onShare} aria-label="Partilhar">
+                <Share2 className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="secondary"
+                size="icon"
+                onClick={onDeletePlan}
+                aria-label="Eliminar plano"
+                className="text-text-muted hover:text-danger"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </>
           ) : null}
         </div>
       </header>

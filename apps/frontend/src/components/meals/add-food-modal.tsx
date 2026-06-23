@@ -1,7 +1,7 @@
 'use client';
 
 import { scaleNutrition } from '@fitplan/shared';
-import { Search } from 'lucide-react';
+import { ScanBarcode, Search } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Field, Input } from '@/components/ui/input';
@@ -9,6 +9,9 @@ import { Modal } from '@/components/ui/modal';
 import { useFoodLibrary, useFoodMutations, useSavedFoods } from '@/hooks/use-foods';
 import { foodIcon } from '@/lib/food-icon';
 import { fmt } from '@/lib/format';
+import { lookupBarcode } from '@/lib/open-food-facts';
+import { toast } from '@/lib/toast';
+import { BarcodeScanner } from './barcode-scanner';
 
 export interface NewFoodItem {
   name: string;
@@ -57,6 +60,30 @@ export function AddFoodModal({
   const [quantity, setQuantity] = useState(100);
   const [saveToLib, setSaveToLib] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [scanning, setScanning] = useState(false);
+  const [looking, setLooking] = useState(false);
+
+  async function handleScan(code: string) {
+    setScanning(false);
+    setLooking(true);
+    const food = await lookupBarcode(code);
+    setLooking(false);
+    if (!food) {
+      toast.error('Produto não encontrado nesta base de dados');
+      return;
+    }
+    setName(food.name);
+    setPer(food.per);
+    setUnit(food.unit);
+    setCalories(food.calories);
+    setProtein(food.protein);
+    setCarbs(food.carbs);
+    setFat(food.fat);
+    setQuantity(food.per);
+    setSaveToLib(true);
+    setSearch('');
+    toast.success('Produto encontrado');
+  }
 
   // alimentos pessoais primeiro, depois o catálogo comum
   const suggestions: Suggestion[] = [
@@ -118,16 +145,33 @@ export function AddFoodModal({
   return (
     <Modal open={open} onClose={onClose} title="Adicionar alimento">
       <div className="flex flex-col gap-4">
-        {/* Pesquisa no catálogo comum + biblioteca pessoal */}
-        <div className="relative">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted" />
-          <Input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Pesquisar (arroz, frango, ovos…)"
-            className="pl-9"
-          />
+        {/* Pesquisa no catálogo + biblioteca pessoal + scanner de código de barras */}
+        <div className="flex gap-2">
+          <div className="relative flex-1">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted" />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Pesquisar (arroz, frango, ovos…)"
+              className="pl-9"
+            />
+          </div>
+          <button
+            type="button"
+            onClick={() => setScanning(true)}
+            aria-label="Ler código de barras"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-line bg-surface-2 text-text transition hover:bg-surface"
+          >
+            <ScanBarcode className="h-5 w-5" />
+          </button>
         </div>
+        {looking ? (
+          <p className="-mt-2 text-[12px] text-text-muted">A procurar produto…</p>
+        ) : null}
+
+        {scanning ? (
+          <BarcodeScanner onDetected={handleScan} onClose={() => setScanning(false)} />
+        ) : null}
 
         {suggestions.length > 0 ? (
           <div className="max-h-52 overflow-y-auto rounded-xl border border-line">
