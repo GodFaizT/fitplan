@@ -1,0 +1,200 @@
+// Schema Prisma do FitPlan (PROJECT.md secção 3.2).
+// Modelo relacional em PostgreSQL. Migrações geridas por `prisma migrate`.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String  @id @default(cuid())
+  email        String  @unique
+  passwordHash String
+  name         String?
+
+  // dados pessoais (calculadora de nutrição)
+  sex           String?
+  age           Int?
+  weightKg      Float?
+  heightCm      Float?
+  activityLevel String?
+  goal          String?
+  goalIntensity String?
+
+  // preferências
+  units       String  @default("metric")
+  accentColor String?
+  theme       String  @default("dark")
+
+  // alvos calculados (cache) — PROJECT.md 5.6 (fonte única de verdade)
+  targetCalories Int?
+  targetProtein  Int?
+  targetCarbs    Int?
+  targetFat      Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  savedFoods      SavedFood[]
+  dailyLogs       DailyLog[]
+  weightEntries   WeightEntry[]
+  planMemberships PlanMember[]
+  ownedPlans      WorkoutPlan[] @relation("owner")
+  refreshTokens   RefreshToken[]
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String
+  expiresAt DateTime
+  revoked   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model SavedFood {
+  id       String @id @default(cuid())
+  userId   String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name     String
+  per      Float // base de referência, ex: 100
+  unit     String // ex: "g"
+  calories Float // por `per` `unit`
+  protein  Float
+  carbs    Float
+  fat      Float
+
+  @@index([userId])
+}
+
+model DailyLog {
+  id     String   @id @default(cuid())
+  userId String
+  user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date   DateTime @db.Date
+  meals  Meal[]
+
+  @@unique([userId, date])
+}
+
+model Meal {
+  id         String     @id @default(cuid())
+  dailyLogId String
+  dailyLog   DailyLog   @relation(fields: [dailyLogId], references: [id], onDelete: Cascade)
+  type       String // pequeno-almoco | almoco | lanche | jantar | ceia | outro
+  label      String?
+  consumed   Boolean    @default(false)
+  position   Int        @default(0)
+  items      FoodItem[]
+
+  @@index([dailyLogId])
+}
+
+model FoodItem {
+  id       String @id @default(cuid())
+  mealId   String
+  meal     Meal   @relation(fields: [mealId], references: [id], onDelete: Cascade)
+  name     String
+  quantity Float
+  unit     String
+  calories Float
+  protein  Float
+  carbs    Float
+  fat      Float
+  position Int    @default(0)
+
+  @@index([mealId])
+}
+
+model WorkoutPlan {
+  id        String       @id @default(cuid())
+  ownerId   String
+  owner     User         @relation("owner", fields: [ownerId], references: [id], onDelete: Cascade)
+  name      String
+  isShared  Boolean      @default(false)
+  shareCode String?      @unique
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  days      WorkoutDay[]
+  members   PlanMember[]
+
+  @@index([ownerId])
+}
+
+model PlanMember {
+  planId String
+  plan   WorkoutPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  userId String
+  user   User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role   String      @default("member") // owner | member
+
+  @@id([planId, userId])
+  @@index([userId])
+}
+
+model WorkoutDay {
+  id        String      @id @default(cuid())
+  planId    String
+  plan      WorkoutPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  label     String
+  title     String?
+  position  Int
+  exercises Exercise[]
+
+  @@index([planId])
+}
+
+model Exercise {
+  id          String     @id @default(cuid())
+  dayId       String
+  day         WorkoutDay @relation(fields: [dayId], references: [id], onDelete: Cascade)
+  libraryId   String? // ref. a ExerciseLibrary, se veio da biblioteca
+  name        String
+  muscleGroup String?
+  sets        Int
+  reps        String
+  restSeconds Int
+  weight      Float?
+  videoUrl    String?
+  notes       String?
+  imageUrls   String[]
+  instructions String[]
+  position    Int
+
+  @@index([dayId])
+}
+
+model ExerciseLibrary {
+  id               String   @id @default(cuid())
+  slug             String   @unique
+  name             String
+  category         String?
+  level            String?
+  force            String?
+  mechanic         String?
+  equipment        String?
+  primaryMuscles   String[]
+  secondaryMuscles String[]
+  instructions     String[]
+  imageUrls        String[]
+
+  @@index([name])
+}
+
+model WeightEntry {
+  id       String   @id @default(cuid())
+  userId   String
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date     DateTime @db.Date
+  weightKg Float
+
+  @@unique([userId, date])
+  @@index([userId])
+}

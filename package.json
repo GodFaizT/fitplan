@@ -1,0 +1,21 @@
+{
+  "name": "fitplan",
+  "version": "0.1.0",
+  "private": true,
+  "description": "FitPlan — plataforma de fitness pessoal (nutrição, refeições, treino). Monorepo: Next.js + NestJS + Prisma/Postgres.",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build:shared": "npm run build -w @fitplan/shared",
+    "test:shared": "npm run test -w @fitplan/shared",
+    "dev:backend": "npm run start:dev -w @fitplan/backend",
+    "dev:frontend": "npm run dev -w @fitplan/frontend",
+    "prisma:migrate": "npm run prisma:migrate -w @fitplan/backend",
+    "seed:exercises": "npm run seed:exercises -w @fitplan/backend"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
