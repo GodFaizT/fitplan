@@ -34,9 +34,7 @@ prisma/*.db
 
 # artefactos de teste do browser (Playwright MCP)
 .playwright-mcp/
-/dashboard-empty.png
-/dashboard-targets.png
-/nutricao.png
+/*.png
 
 # serwist (service worker gerado)
 apps/frontend/public/sw.js
