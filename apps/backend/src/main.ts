@@ -20,7 +20,8 @@ async function bootstrap(): Promise<void> {
   // CORS configurado para o domínio do frontend (PROJECT.md 12.4 — nunca "*" com cookies)
   const origin = (process.env.CORS_ORIGIN ?? 'http://localhost:3000')
     .split(',')
-    .map((o) => o.trim());
+    .map((o) => o.trim().replace(/\/+$/, '')) // tolera barra(s) no fim
+    .filter(Boolean);
   app.enableCors({ origin, credentials: true });
 
   const port = process.env.PORT ? Number(process.env.PORT) : 3001;
