@@ -20,6 +20,7 @@ import { Ring } from '@/components/ui/ring';
 import { Segmented } from '@/components/ui/segmented';
 import { useDailyLog, useMealMutations } from '@/hooks/use-meals';
 import { useAuthStore } from '@/lib/auth-store';
+import { foodIcon } from '@/lib/food-icon';
 import { addDays, dateLabel, fmt, todayISO } from '@/lib/format';
 import { MEAL_TYPE_LABELS, MEAL_TYPES } from '@/lib/labels';
 import { sumMeals, targetsFromUser } from '@/lib/totals';
@@ -116,27 +117,36 @@ export default function MealsPage() {
 
                 {meal.items.length > 0 ? (
                   <ul className="mt-3 divide-y divide-line">
-                    {meal.items.map((it) => (
-                      <li key={it.id} className="flex items-center justify-between py-2">
-                        <div className="min-w-0">
-                          <p className="truncate text-sm">{it.name}</p>
-                          <p className="text-[12px] text-text-muted">
-                            {fmt(it.quantity)}
-                            {it.unit} · P{fmt(it.protein, 1)} H{fmt(it.carbs, 1)} G{fmt(it.fat, 1)}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="tabular text-sm">{fmt(it.calories)}</span>
-                          <button
-                            onClick={() => m.deleteItem.mutate(it.id)}
-                            className="rounded p-1 text-text-muted hover:text-danger"
-                            aria-label="Remover alimento"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
-                        </div>
-                      </li>
-                    ))}
+                    {meal.items.map((it) => {
+                      const Icon = foodIcon(it.name);
+                      return (
+                        <li key={it.id} className="flex items-center justify-between gap-2 py-2">
+                          <div className="flex min-w-0 items-center gap-2.5">
+                            <Icon
+                              className="h-4 w-4 shrink-0 text-text-muted"
+                              strokeWidth={1.8}
+                            />
+                            <div className="min-w-0">
+                              <p className="truncate text-sm">{it.name}</p>
+                              <p className="text-[12px] text-text-muted">
+                                {fmt(it.quantity)}
+                                {it.unit} · P{fmt(it.protein, 1)} H{fmt(it.carbs, 1)} G{fmt(it.fat, 1)}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex shrink-0 items-center gap-2">
+                            <span className="tabular text-sm">{fmt(it.calories)}</span>
+                            <button
+                              onClick={() => m.deleteItem.mutate(it.id)}
+                              className="rounded p-1 text-text-muted hover:text-danger"
+                              aria-label="Remover alimento"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        </li>
+                      );
+                    })}
                   </ul>
                 ) : null}
 

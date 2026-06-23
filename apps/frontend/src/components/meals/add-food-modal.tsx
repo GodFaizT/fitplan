@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Field, Input } from '@/components/ui/input';
 import { Modal } from '@/components/ui/modal';
 import { useFoodLibrary, useFoodMutations, useSavedFoods } from '@/hooks/use-foods';
+import { foodIcon } from '@/lib/food-icon';
 import { fmt } from '@/lib/format';
 
 export interface NewFoodItem {
@@ -28,6 +29,7 @@ interface Suggestion {
   protein: number;
   carbs: number;
   fat: number;
+  category?: string | null;
   source: 'meu' | 'catalogo';
 }
 
@@ -129,26 +131,30 @@ export function AddFoodModal({
 
         {suggestions.length > 0 ? (
           <div className="max-h-52 overflow-y-auto rounded-xl border border-line">
-            {suggestions.map((f) => (
-              <button
-                key={`${f.source}-${f.id}`}
-                onClick={() => pick(f)}
-                className="flex w-full items-center justify-between gap-2 border-b border-line px-3 py-2 text-left text-sm last:border-0 hover:bg-surface-2"
-              >
-                <span className="flex items-center gap-2">
-                  {f.source === 'meu' ? (
-                    <span className="rounded bg-accent/15 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-accent">
-                      Meu
-                    </span>
-                  ) : null}
-                  <span className="truncate">{f.name}</span>
-                </span>
-                <span className="shrink-0 text-text-muted">
-                  {fmt(f.calories)} kcal / {f.per}
-                  {f.unit}
-                </span>
-              </button>
-            ))}
+            {suggestions.map((f) => {
+              const Icon = foodIcon(f.name, f.category);
+              return (
+                <button
+                  key={`${f.source}-${f.id}`}
+                  onClick={() => pick(f)}
+                  className="flex w-full items-center justify-between gap-2 border-b border-line px-3 py-2 text-left text-sm last:border-0 hover:bg-surface-2"
+                >
+                  <span className="flex min-w-0 items-center gap-2">
+                    <Icon className="h-4 w-4 shrink-0 text-accent" strokeWidth={1.8} />
+                    {f.source === 'meu' ? (
+                      <span className="rounded bg-accent/15 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-accent">
+                        Meu
+                      </span>
+                    ) : null}
+                    <span className="truncate">{f.name}</span>
+                  </span>
+                  <span className="shrink-0 text-text-muted">
+                    {fmt(f.calories)} kcal / {f.per}
+                    {f.unit}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         ) : null}
 
