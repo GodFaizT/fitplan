@@ -1,0 +1,100 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e5]:
+    - complementary [ref=e6]:
+      - generic [ref=e8]: FitPlan
+      - navigation [ref=e9]:
+        - link "Início" [ref=e10] [cursor=pointer]:
+          - /url: /
+          - img [ref=e11]
+          - text: Início
+        - link "Nutrição" [ref=e16] [cursor=pointer]:
+          - /url: /nutricao
+          - img [ref=e17]
+          - text: Nutrição
+        - link "Refeições" [ref=e19] [cursor=pointer]:
+          - /url: /refeicoes
+          - img [ref=e20]
+          - text: Refeições
+        - link "Treino" [ref=e23] [cursor=pointer]:
+          - /url: /treino
+          - img [ref=e24]
+          - text: Treino
+        - link "Definições" [ref=e30] [cursor=pointer]:
+          - /url: /definicoes
+          - img [ref=e31]
+          - text: Definições
+    - main [ref=e34]:
+      - generic [ref=e35]:
+        - generic [ref=e36]:
+          - text: Nutrição
+          - heading "Calculadora" [level=2] [ref=e37]
+          - paragraph [ref=e38]: Os teus dados → calorias e macros diários. Atualiza em tempo real.
+        - generic [ref=e39]:
+          - generic [ref=e40]:
+            - img [ref=e43]:
+              - generic [ref=e44]:
+                - img [ref=e110]
+                - img [ref=e112]
+                - img [ref=e114]
+            - generic:
+              - generic: "2633"
+              - generic: kcal
+          - generic [ref=e52]:
+            - generic [ref=e53]:
+              - generic [ref=e54]: "2633"
+              - generic [ref=e55]: kcal / dia
+            - paragraph [ref=e56]: "BMR: 1699 kcal · TDEE: 2633 kcal"
+            - generic [ref=e58]:
+              - generic [ref=e59]:
+                - generic [ref=e62]: Proteína
+                - paragraph [ref=e63]: 135g
+                - paragraph [ref=e64]: 21%
+              - generic [ref=e65]:
+                - generic [ref=e68]: Hidratos
+                - paragraph [ref=e69]: 359g
+                - paragraph [ref=e70]: 55%
+              - generic [ref=e71]:
+                - generic [ref=e74]: Gordura
+                - paragraph [ref=e75]: 73g
+                - paragraph [ref=e76]: 25%
+        - generic [ref=e77]:
+          - generic [ref=e78]:
+            - generic [ref=e79]:
+              - generic [ref=e80]: Sexo
+              - generic [ref=e81]:
+                - button "Sexo Feminino" [ref=e82] [cursor=pointer]: Masculino
+                - button "Feminino" [ref=e83] [cursor=pointer]
+            - generic [ref=e84]:
+              - generic [ref=e85]: Unidades
+              - generic [ref=e86]:
+                - button "Unidades Imperial" [ref=e87] [cursor=pointer]: Métrico
+                - button "Imperial" [ref=e88] [cursor=pointer]
+            - generic [ref=e89]:
+              - generic [ref=e90]: Idade
+              - spinbutton "Idade" [ref=e91]: "30"
+            - generic [ref=e92]:
+              - generic [ref=e93]: Peso (kg)
+              - spinbutton "Peso (kg)" [ref=e94]: "75"
+            - generic [ref=e95]:
+              - generic [ref=e96]: Altura (cm)
+              - spinbutton "Altura (cm)" [ref=e97]: "175"
+            - generic [ref=e98]:
+              - generic [ref=e99]: Nível de atividade
+              - combobox "Nível de atividade Exercício moderado 3–5 dias/semana" [ref=e100]:
+                - option "Sedentário"
+                - option "Levemente ativo"
+                - option "Moderadamente ativo" [selected]
+                - option "Muito ativo"
+                - option "Extremamente ativo"
+              - generic [ref=e101]: Exercício moderado 3–5 dias/semana
+          - generic [ref=e102]:
+            - generic [ref=e103]: Objetivo
+            - generic [ref=e104]:
+              - button "Objetivo Manter Ganhar massa" [ref=e105] [cursor=pointer]: Perder gordura
+              - button "Manter" [ref=e106] [cursor=pointer]
+              - button "Ganhar massa" [ref=e107] [cursor=pointer]
+          - button "Alvos guardados" [ref=e115] [cursor=pointer]
+  - generic [ref=e116]:
+    - img [ref=e117]
+    - generic [ref=e120]: Alvos guardados
+  - alert [ref=e4]

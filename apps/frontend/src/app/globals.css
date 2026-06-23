@@ -1,0 +1,84 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Tokens de design — PROJECT.md secção 8.2. Tema escuro por defeito. */
+:root,
+.dark {
+  --bg: #1a1c1e;
+  --surface: #24262a;
+  --surface-2: #2c2f33;
+  --border: rgba(255, 255, 255, 0.08);
+  --text: #ffffff;
+  --text-muted: #9a9c9e;
+  --accent: #c5f82a; /* lima — pode ser sobreposto pela preferência do utilizador */
+  --accent-text: #1a1c1e;
+
+  --protein: #378add;
+  --carbs: #ef9f27;
+  --fat: #1d9e75;
+  --success: #1d9e75;
+  --warning: #ef9f27;
+  --danger: #e24b4a;
+}
+
+.light {
+  --bg: #f7f7f5;
+  --surface: #ffffff;
+  --surface-2: #ececea;
+  --border: rgba(0, 0, 0, 0.08);
+  --text: #1a1c1e;
+  --text-muted: #6b6d6f;
+  --accent-text: #1a1c1e;
+  /* lima e cores de macro mantêm-se */
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    background-color: var(--bg);
+    color: var(--text);
+    font-feature-settings: 'cv11', 'ss01';
+    /* respeitar a safe-area do iPhone (notch / barra inferior) */
+    min-height: 100dvh;
+  }
+  /* Sentence case por todo o lado; números tabulares para alinhamento */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+  ::selection {
+    background: var(--accent);
+    color: var(--accent-text);
+  }
+}
+
+@layer utilities {
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+  /* esconder scrollbar em carrosséis */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}

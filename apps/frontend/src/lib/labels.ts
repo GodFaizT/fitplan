@@ -1,0 +1,79 @@
+/** Tradução dos valores canónicos (inglês na API) para rótulos PT na UI. */
+
+export const SEX_LABELS: Record<string, string> = {
+  male: 'Masculino',
+  female: 'Feminino',
+};
+
+export const ACTIVITY_LABELS: Record<string, string> = {
+  sedentary: 'Sedentário',
+  light: 'Levemente ativo',
+  moderate: 'Moderadamente ativo',
+  very: 'Muito ativo',
+  extra: 'Extremamente ativo',
+};
+
+export const ACTIVITY_HINTS: Record<string, string> = {
+  sedentary: 'Pouco ou nenhum exercício',
+  light: 'Exercício leve 1–3 dias/semana',
+  moderate: 'Exercício moderado 3–5 dias/semana',
+  very: 'Exercício intenso 6–7 dias/semana',
+  extra: 'Trabalho físico + treino diário',
+};
+
+export const GOAL_LABELS: Record<string, string> = {
+  lose: 'Perder gordura',
+  maintain: 'Manter',
+  gain: 'Ganhar massa',
+};
+
+export const INTENSITY_LABELS: Record<string, string> = {
+  light: 'Ligeiro',
+  moderate: 'Moderado',
+  aggressive: 'Agressivo',
+};
+
+export const MEAL_TYPE_LABELS: Record<string, string> = {
+  'pequeno-almoco': 'Pequeno-almoço',
+  almoco: 'Almoço',
+  lanche: 'Lanche',
+  jantar: 'Jantar',
+  ceia: 'Ceia',
+  outro: 'Outro',
+};
+
+export const MEAL_TYPES = [
+  'pequeno-almoco',
+  'almoco',
+  'lanche',
+  'jantar',
+  'ceia',
+  'outro',
+] as const;
+
+/** Tradução simples de grupos musculares (Free Exercise DB → PT). PROJECT.md 6.4. */
+export const MUSCLE_LABELS: Record<string, string> = {
+  chest: 'Peito',
+  back: 'Costas',
+  shoulders: 'Ombros',
+  biceps: 'Bíceps',
+  triceps: 'Tríceps',
+  forearms: 'Antebraços',
+  quadriceps: 'Quadríceps',
+  hamstrings: 'Isquiotibiais',
+  glutes: 'Glúteos',
+  calves: 'Gémeos',
+  abdominals: 'Abdominais',
+  traps: 'Trapézios',
+  lats: 'Dorsais',
+  'middle back': 'Costas (meio)',
+  'lower back': 'Lombar',
+  neck: 'Pescoço',
+  adductors: 'Adutores',
+  abductors: 'Abdutores',
+};
+
+export function muscleLabel(m?: string | null): string {
+  if (!m) return '—';
+  return MUSCLE_LABELS[m] ?? m.charAt(0).toUpperCase() + m.slice(1);
+}
