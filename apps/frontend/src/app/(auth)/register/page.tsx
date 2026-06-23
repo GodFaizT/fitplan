@@ -1,5 +1,6 @@
 'use client';
 
+import { Clock } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -18,6 +19,7 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [pending, setPending] = useState(false);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -25,6 +27,10 @@ export default function RegisterPage() {
     setLoading(true);
     try {
       const res = await registerRequest(email, password, name || undefined);
+      if ('pending' in res) {
+        setPending(true);
+        return;
+      }
       setAuth(res.accessToken, res.user);
       router.replace('/');
     } catch (err) {
@@ -32,6 +38,27 @@ export default function RegisterPage() {
     } finally {
       setLoading(false);
     }
+  }
+
+  if (pending) {
+    return (
+      <Card className="w-full max-w-sm text-center">
+        <Logo className="text-2xl" />
+        <div className="mt-5 flex flex-col items-center gap-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-accent/15">
+            <Clock className="h-6 w-6 text-accent" />
+          </div>
+          <p className="font-medium">Conta criada!</p>
+          <p className="text-sm text-text-muted">
+            A tua conta está a aguardar aprovação do administrador. Vais poder
+            entrar assim que for aprovada.
+          </p>
+          <Link href="/login" className="mt-2 text-sm text-accent hover:underline">
+            Voltar ao login
+          </Link>
+        </div>
+      </Card>
+    );
   }
 
   return (

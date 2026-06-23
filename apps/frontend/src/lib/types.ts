@@ -4,6 +4,8 @@ export interface ApiUser {
   id: string;
   email: string;
   name: string | null;
+  role: string;
+  approved: boolean;
   sex: string | null;
   age: number | null;
   weightKg: number | null;

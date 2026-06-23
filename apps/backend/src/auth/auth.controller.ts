@@ -32,6 +32,7 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     const result = await this.auth.register(dto);
+    if ('pending' in result) return { pending: true };
     return this.respond(result, res);
   }
 

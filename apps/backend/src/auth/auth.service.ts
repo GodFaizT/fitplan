@@ -1,5 +1,6 @@
 import {
   ConflictException,
+  ForbiddenException,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -34,30 +35,52 @@ export class AuthService {
 
   // ---- API pública --------------------------------------------------------
 
-  async register(dto: RegisterDto): Promise<AuthResult> {
+  async register(dto: RegisterDto): Promise<AuthResult | { pending: true }> {
     const email = dto.email.toLowerCase().trim();
     const existing = await this.prisma.user.findUnique({ where: { email } });
     if (existing) {
       throw new ConflictException('Já existe uma conta com este email');
     }
 
+    const isAdmin = email === this.adminEmail();
     const passwordHash = await bcrypt.hash(dto.password, 10);
     const user = await this.prisma.user.create({
-      data: { email, passwordHash, name: dto.name?.trim() || null },
+      data: {
+        email,
+        passwordHash,
+        name: dto.name?.trim() || null,
+        role: isAdmin ? 'admin' : 'user',
+        approved: isAdmin, // só o admin entra logo; restantes ficam pendentes
+      },
     });
 
+    if (!user.approved) return { pending: true };
     return this.buildAuthResult(user);
   }
 
   async login(dto: LoginDto): Promise<AuthResult> {
     const email = dto.email.toLowerCase().trim();
-    const user = await this.prisma.user.findUnique({ where: { email } });
+    let user = await this.prisma.user.findUnique({ where: { email } });
     if (!user) {
       throw new UnauthorizedException('Credenciais inválidas');
     }
     const ok = await bcrypt.compare(dto.password, user.passwordHash);
     if (!ok) {
       throw new UnauthorizedException('Credenciais inválidas');
+    }
+
+    // garante que o email admin configurado é sempre admin + aprovado
+    if (email === this.adminEmail() && (user.role !== 'admin' || !user.approved)) {
+      user = await this.prisma.user.update({
+        where: { id: user.id },
+        data: { role: 'admin', approved: true },
+      });
+    }
+
+    if (!user.approved) {
+      throw new ForbiddenException(
+        'A tua conta está a aguardar aprovação do administrador.',
+      );
     }
 
     return this.buildAuthResult(user);
@@ -108,6 +131,12 @@ export class AuthService {
   }
 
   // ---- Internos -----------------------------------------------------------
+
+  /** Email do administrador (ADMIN_EMAIL), normalizado. */
+  private adminEmail(): string | null {
+    const email = this.config.get<string>('ADMIN_EMAIL');
+    return email ? email.toLowerCase().trim() : null;
+  }
 
   private async buildAuthResult(user: User): Promise<AuthResult> {
     const accessToken = this.signAccessToken(user);

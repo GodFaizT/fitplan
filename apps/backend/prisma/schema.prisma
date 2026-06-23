@@ -16,6 +16,10 @@ model User {
   passwordHash String
   name         String?
 
+  // acesso
+  role     String  @default("user") // user | admin
+  approved Boolean @default(false) // contas novas ficam pendentes até aprovação
+
   // dados pessoais (calculadora de nutrição)
   sex           String?
   age           Int?

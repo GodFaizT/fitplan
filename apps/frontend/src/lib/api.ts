@@ -138,7 +138,7 @@ export async function registerRequest(
   email: string,
   password: string,
   name?: string,
-): Promise<AuthResponse> {
+): Promise<AuthResponse | { pending: true }> {
   const res = await fetch(`${API_URL}/auth/register`, {
     method: 'POST',
     credentials: 'include',
@@ -154,7 +154,7 @@ export async function registerRequest(
       : body.message;
     throw new ApiError(res.status, msg ?? 'Não foi possível criar a conta');
   }
-  return res.json() as Promise<AuthResponse>;
+  return res.json() as Promise<AuthResponse | { pending: true }>;
 }
 
 export async function logoutRequest(): Promise<void> {
