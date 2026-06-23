@@ -12,11 +12,10 @@ COPY packages/shared packages/shared
 RUN npm run build -w @fitplan/shared
 COPY apps/frontend apps/frontend
 # NEXT_PUBLIC_* é embebido no bundle em build-time.
-# Default RELATIVO "/api" → funciona quando o frontend e a API estão na mesma
-# origem (path-based, ex: appfit.tomasdev.me + appfit.tomasdev.me/api), mesmo
-# que o Dokploy não passe build-args. Para subdomínios separados, passar o URL
-# absoluto como build-arg (ex: https://api.dominio.com/api).
-ARG NEXT_PUBLIC_API_URL=/api
+# Backend num subdomínio próprio (apifit.tomasdev.me) — o Dokploy não passa
+# build-args de forma fiável, por isso o default já aponta para o URL de produção.
+# Para outro destino, passar NEXT_PUBLIC_API_URL como build-arg.
+ARG NEXT_PUBLIC_API_URL=https://apifit.tomasdev.me/api
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 RUN npm run build -w @fitplan/frontend
 
