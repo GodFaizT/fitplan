@@ -10,6 +10,7 @@ import { ChangePassword } from '@/components/settings/change-password';
 import { NotificationsCard } from '@/components/settings/notifications';
 import { Button } from '@/components/ui/button';
 import { Card, Eyebrow, SectionTitle } from '@/components/ui/card';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Field, Input } from '@/components/ui/input';
 import { Segmented } from '@/components/ui/segmented';
 import { useUpdateProfile } from '@/hooks/use-nutrition';
@@ -38,6 +39,7 @@ export default function SettingsPage() {
   const queryClient = useQueryClient();
 
   const [name, setName] = useState(user?.name ?? '');
+  const [confirmReset, setConfirmReset] = useState(false);
 
   async function saveName() {
     await update.mutateAsync({ name: name || null });
@@ -54,9 +56,9 @@ export default function SettingsPage() {
   }
 
   async function onReset() {
-    if (!confirm('Repor os teus dados pessoais e alvos? As refeições e planos mantêm-se.')) return;
     const updated = await api.del<typeof user>('/users/me/data');
     if (updated) setUser(updated);
+    setConfirmReset(false);
     toast.success('Dados repostos');
   }
 
@@ -143,7 +145,7 @@ export default function SettingsPage() {
       </Card>
 
       <Card className="flex flex-col gap-3">
-        <Button variant="secondary" onClick={onReset}>
+        <Button variant="secondary" onClick={() => setConfirmReset(true)}>
           <RotateCcw className="h-4 w-4" /> Repor dados pessoais
         </Button>
         <Button variant="danger" onClick={onLogout}>
@@ -163,6 +165,15 @@ export default function SettingsPage() {
         </a>{' '}
         (domínio público).
       </p>
+
+      <ConfirmDialog
+        open={confirmReset}
+        onClose={() => setConfirmReset(false)}
+        onConfirm={onReset}
+        title="Repor dados pessoais"
+        description="Repor os teus dados pessoais e alvos? As refeições e planos mantêm-se."
+        confirmLabel="Repor"
+      />
     </div>
   );
 }

@@ -18,6 +18,7 @@ import { TrainingSession } from '@/components/workout/training-session';
 import { YouTubeEmbed } from '@/components/workout/youtube-embed';
 import { Button } from '@/components/ui/button';
 import { Card, Eyebrow } from '@/components/ui/card';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Field, Input } from '@/components/ui/input';
 import { EmptyState, Skeleton } from '@/components/ui/misc';
 import { Modal } from '@/components/ui/modal';
@@ -53,6 +54,7 @@ function PlanDetailInner() {
   const [shareOpen, setShareOpen] = useState(false);
   const [editEx, setEditEx] = useState<PlanExercise | null>(null);
   const [trainingMode, setTrainingMode] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   if (plan.isLoading) return <Skeleton className="h-64 w-full" />;
   if (!plan.data) return <p className="text-text-muted">Plano não encontrado.</p>;
@@ -79,9 +81,6 @@ function PlanDetailInner() {
   }
 
   async function onDeletePlan() {
-    if (!confirm(`Eliminar o plano "${p.name}"? Esta ação não pode ser anulada.`)) {
-      return;
-    }
     await mut.deletePlan.mutateAsync(planId);
     router.push('/treino');
   }
@@ -115,7 +114,7 @@ function PlanDetailInner() {
               <Button
                 variant="secondary"
                 size="icon"
-                onClick={onDeletePlan}
+                onClick={() => setConfirmDelete(true)}
                 aria-label="Eliminar plano"
                 className="text-text-muted hover:text-danger"
               >
@@ -247,6 +246,17 @@ function PlanDetailInner() {
       />
 
       <ShareModal open={shareOpen} onClose={() => setShareOpen(false)} code={p.shareCode} />
+
+      <ConfirmDialog
+        open={confirmDelete}
+        onClose={() => setConfirmDelete(false)}
+        onConfirm={onDeletePlan}
+        title="Eliminar plano"
+        description={`Eliminar "${p.name}"? Esta ação não pode ser anulada.`}
+        confirmLabel="Eliminar"
+        danger
+        busy={mut.deletePlan.isPending}
+      />
     </div>
   );
 }

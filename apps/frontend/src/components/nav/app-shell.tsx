@@ -18,7 +18,6 @@ const NAV = [
   { href: '/refeicoes', label: 'Refeições', icon: Utensils },
   { href: '/treino', label: 'Treino', icon: Dumbbell },
   { href: '/progresso', label: 'Progresso', icon: TrendingUp },
-  { href: '/definicoes', label: 'Definições', icon: Settings },
 ];
 
 function isActive(pathname: string, href: string): boolean {
@@ -36,6 +35,7 @@ export function Logo({ className }: { className?: string }) {
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const settingsActive = isActive(pathname, '/definicoes');
 
   return (
     <div className="min-h-[100dvh]">
@@ -67,10 +67,41 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             );
           })}
         </nav>
+        {/* Definições no fundo da sidebar */}
+        <Link
+          href="/definicoes"
+          className={cn(
+            'flex items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] transition',
+            settingsActive
+              ? 'bg-surface-2 text-text'
+              : 'text-text-muted hover:bg-surface-2 hover:text-text',
+          )}
+        >
+          <Settings
+            className={cn('h-5 w-5', settingsActive && 'text-accent')}
+            strokeWidth={settingsActive ? 2.2 : 1.8}
+          />
+          Definições
+        </Link>
       </aside>
 
-      {/* Conteúdo — safe-area no topo para não ficar sob o notch/barra de estado (PWA iOS) */}
-      <main className="mx-auto w-full max-w-content px-4 pb-28 pt-[calc(1.25rem+env(safe-area-inset-top))] sm:px-6 lg:pb-10 lg:pl-64 lg:pr-8 lg:pt-5">
+      {/* Barra de topo (mobile) — marca + acesso a Definições */}
+      <header className="safe-top sticky top-0 z-30 flex items-center justify-between border-b border-line bg-bg/80 px-4 py-3 backdrop-blur lg:hidden">
+        <Logo />
+        <Link
+          href="/definicoes"
+          aria-label="Definições"
+          className={cn(
+            'rounded-lg p-1.5 transition',
+            settingsActive ? 'text-accent' : 'text-text-muted hover:text-text',
+          )}
+        >
+          <Settings className="h-5 w-5" />
+        </Link>
+      </header>
+
+      {/* Conteúdo */}
+      <main className="mx-auto w-full max-w-content px-4 pb-28 pt-5 sm:px-6 lg:pb-10 lg:pl-64 lg:pr-8 lg:pt-6">
         {children}
       </main>
 
