@@ -51,6 +51,7 @@ export interface DailyLog {
   id: string;
   userId: string;
   date: string;
+  water: number;
   meals: Meal[];
 }
 

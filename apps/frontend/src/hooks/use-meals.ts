@@ -124,6 +124,18 @@ export function useMealMutations(date: string) {
     onSuccess: invalidate,
   });
 
+  const setWater = useMutation({
+    mutationFn: (water: number) =>
+      api.patch<{ water: number }>(`/logs/${date}/water`, { water }),
+    onMutate: async (water) => {
+      const prev = await snapshot();
+      patch((log) => ({ ...log, water }));
+      return { prev };
+    },
+    onError: (_e, _v, ctx) => rollback(ctx?.prev),
+    onSettled: invalidate,
+  });
+
   return {
     addMeal,
     updateMeal,
@@ -132,5 +144,6 @@ export function useMealMutations(date: string) {
     updateItem,
     deleteItem,
     copyDay,
+    setWater,
   };
 }

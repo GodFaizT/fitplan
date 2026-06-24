@@ -4,9 +4,10 @@ import {
   ChevronLeft,
   ChevronRight,
   CopyPlus,
+  GlassWater,
+  Minus,
   Plus,
   Trash2,
-  UtensilsCrossed,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
@@ -14,7 +15,7 @@ import { AddFoodModal, type NewFoodItem } from '@/components/meals/add-food-moda
 import { Button } from '@/components/ui/button';
 import { Card, Eyebrow, SectionTitle } from '@/components/ui/card';
 import { Field, Input } from '@/components/ui/input';
-import { EmptyState, Skeleton } from '@/components/ui/misc';
+import { Skeleton } from '@/components/ui/misc';
 import { Modal } from '@/components/ui/modal';
 import { ProgressBar } from '@/components/ui/progress-bar';
 import { Ring } from '@/components/ui/ring';
@@ -39,6 +40,7 @@ export default function MealsPage() {
 
   const targets = targetsFromUser(user);
   const totals = log.data ? sumMeals(log.data.meals) : null;
+  const hasItems = (log.data?.meals ?? []).some((meal) => meal.items.length > 0);
 
   async function handleAddFood(item: NewFoodItem) {
     if (!addFoodFor) return;
@@ -98,12 +100,19 @@ export default function MealsPage() {
         </Card>
       )}
 
+      {log.data ? (
+        <WaterCard
+          glasses={log.data.water}
+          onChange={(n) => m.setWater.mutate(n)}
+        />
+      ) : null}
+
       {/* Refeições */}
       {log.isLoading ? (
         <Skeleton className="h-40 w-full" />
-      ) : log.data && log.data.meals.length > 0 ? (
+      ) : (
         <div className="flex flex-col gap-3">
-          {log.data.meals.map((meal) => {
+          {(log.data?.meals ?? []).map((meal) => {
             const mt = sumMeals([meal]);
             const MealIcon = mealIcon(meal.type);
             return (
@@ -176,27 +185,28 @@ export default function MealsPage() {
             );
           })}
         </div>
-      ) : (
-        <EmptyState
-          icon={UtensilsCrossed}
-          title="Ainda não registaste refeições"
-          description="Adiciona a primeira refeição ou copia o dia anterior."
-          action={
-            <Button
-              variant="secondary"
-              onClick={() => m.copyDay.mutate(addDays(date, -1))}
-              disabled={m.copyDay.isPending}
-            >
-              <CopyPlus className="h-4 w-4" />
-              {m.copyDay.isPending ? 'A copiar…' : 'Copiar dia anterior'}
-            </Button>
-          }
-        />
       )}
 
-      <Button variant="secondary" onClick={() => setAddMealOpen(true)}>
-        <Plus className="h-4 w-4" /> Adicionar refeição
-      </Button>
+      <div className="flex flex-col gap-2 sm:flex-row">
+        {!hasItems ? (
+          <Button
+            variant="secondary"
+            className="sm:flex-1"
+            onClick={() => m.copyDay.mutate(addDays(date, -1))}
+            disabled={m.copyDay.isPending}
+          >
+            <CopyPlus className="h-4 w-4" />
+            {m.copyDay.isPending ? 'A copiar…' : 'Copiar dia anterior'}
+          </Button>
+        ) : null}
+        <Button
+          variant="secondary"
+          className="sm:flex-1"
+          onClick={() => setAddMealOpen(true)}
+        >
+          <Plus className="h-4 w-4" /> Adicionar refeição
+        </Button>
+      </div>
 
       <AddFoodModal
         open={addFoodFor !== null}
@@ -235,6 +245,58 @@ function Bar({
       </div>
       <ProgressBar value={value} max={max} color={meta.color} />
     </div>
+  );
+}
+
+function WaterCard({
+  glasses,
+  onChange,
+}: {
+  glasses: number;
+  onChange: (n: number) => void;
+}) {
+  const goal = 8;
+  return (
+    <Card className="flex flex-col gap-3">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <GlassWater className="h-4 w-4" style={{ color: 'var(--protein)' }} />
+          <SectionTitle className="text-[15px]">Água</SectionTitle>
+        </div>
+        <span className="stat text-sm">
+          <span className="text-text">{glasses}</span>
+          <span className="text-text-muted"> / {goal} copos</span>
+        </span>
+      </div>
+      <div className="flex items-center gap-3">
+        <button
+          onClick={() => onChange(Math.max(0, glasses - 1))}
+          disabled={glasses === 0}
+          aria-label="Menos um copo"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-line bg-surface-2 text-text transition hover:bg-surface disabled:opacity-30"
+        >
+          <Minus className="h-4 w-4" />
+        </button>
+        <div className="flex flex-1 gap-1">
+          {Array.from({ length: goal }).map((_, i) => (
+            <div
+              key={i}
+              className="h-7 flex-1 rounded-md transition-colors"
+              style={{
+                background: i < glasses ? 'var(--protein)' : 'var(--surface-2)',
+              }}
+            />
+          ))}
+        </div>
+        <button
+          onClick={() => onChange(glasses + 1)}
+          aria-label="Mais um copo"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-accent text-accent-text transition hover:brightness-95"
+        >
+          <Plus className="h-4 w-4" />
+        </button>
+      </div>
+    </Card>
   );
 }
 

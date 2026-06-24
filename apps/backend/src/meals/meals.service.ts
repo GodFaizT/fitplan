@@ -15,6 +15,9 @@ const mealInclude = {
   },
 } satisfies Prisma.DailyLogInclude;
 
+/** Refeições criadas automaticamente num dia novo. */
+const DEFAULT_MEALS = ['pequeno-almoco', 'almoco', 'lanche', 'jantar'] as const;
+
 /** Converte "YYYY-MM-DD" para um Date à meia-noite UTC (coluna @db.Date). */
 function parseDate(dateStr: string): Date {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
@@ -37,7 +40,13 @@ export class MealsService {
     if (existing) return existing;
 
     return this.prisma.dailyLog.create({
-      data: { userId, date },
+      data: {
+        userId,
+        date,
+        meals: {
+          create: DEFAULT_MEALS.map((type, i) => ({ type, position: i })),
+        },
+      },
       include: mealInclude,
     });
   }
@@ -131,12 +140,17 @@ export class MealsService {
       },
     });
     const target = await this.getLog(userId, toDate);
-    if (!source || source.meals.length === 0) return target;
+    const sourceMeals = (source?.meals ?? []).filter((m) => m.items.length > 0);
+    if (sourceMeals.length === 0) return target;
 
+    // Remove o scaffolding por defeito vazio antes de copiar.
+    await this.prisma.meal.deleteMany({
+      where: { dailyLogId: target.id, items: { none: {} } },
+    });
     let position = await this.prisma.meal.count({
       where: { dailyLogId: target.id },
     });
-    for (const meal of source.meals) {
+    for (const meal of sourceMeals) {
       await this.prisma.meal.create({
         data: {
           dailyLogId: target.id,
@@ -187,6 +201,18 @@ export class MealsService {
       if (out.length >= limit) break;
     }
     return out;
+  }
+
+  /** Define o nº de copos de água do dia. */
+  async setWater(userId: string, dateStr: string, water: number) {
+    await this.getLog(userId, dateStr); // garante que o dia existe
+    const date = parseDate(dateStr);
+    const value = Math.max(0, Math.min(Math.round(water), 30));
+    await this.prisma.dailyLog.update({
+      where: { userId_date: { userId, date } },
+      data: { water: value },
+    });
+    return { water: value };
   }
 
   // ---- verificações de propriedade ---------------------------------------

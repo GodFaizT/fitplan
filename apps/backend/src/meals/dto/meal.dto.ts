@@ -5,6 +5,7 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  Max,
   MaxLength,
   Min,
 } from 'class-validator';
@@ -28,6 +29,10 @@ export class UpdateMealDto {
   @IsOptional() @IsString() @MaxLength(60) label?: string;
   @IsOptional() @IsBoolean() consumed?: boolean;
   @IsOptional() @IsInt() @Min(0) position?: number;
+}
+
+export class WaterDto {
+  @IsInt() @Min(0) @Max(30) water!: number;
 }
 
 export class AddItemDto {

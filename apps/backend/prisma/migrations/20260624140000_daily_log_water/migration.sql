@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "DailyLog" ADD COLUMN "water" INTEGER NOT NULL DEFAULT 0;

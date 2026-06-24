@@ -96,6 +96,7 @@ model DailyLog {
   userId String
   user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   date   DateTime @db.Date
+  water  Int      @default(0) // copos de água do dia
   meals  Meal[]
 
   @@unique([userId, date])

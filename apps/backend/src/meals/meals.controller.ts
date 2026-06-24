@@ -17,6 +17,7 @@ import {
   AddMealDto,
   UpdateItemDto,
   UpdateMealDto,
+  WaterDto,
 } from './dto/meal.dto';
 import { MealsService } from './meals.service';
 
@@ -47,6 +48,16 @@ export class MealsController {
   ) {
     if (!from) throw new BadRequestException('Campo "from" obrigatório');
     return this.meals.copyDay(user.id, date, from);
+  }
+
+  /** PATCH /logs/:date/water — define os copos de água do dia. */
+  @Patch('logs/:date/water')
+  setWater(
+    @CurrentUser() user: AuthUser,
+    @Param('date') date: string,
+    @Body() dto: WaterDto,
+  ) {
+    return this.meals.setWater(user.id, date, dto.water);
   }
 
   @Post('logs/:date/meals')
