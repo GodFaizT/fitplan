@@ -25,7 +25,16 @@ Variáveis de ambiente:
 | `CORS_ORIGIN` | `https://app.oteudominio.com` (o domínio do frontend, **nunca** `*`) |
 | `PORT` | `3001` |
 | `USE_REFRESH_COOKIE` | `true` |
+| `COOKIE_SECURE` | `true` (HTTPS) · `false` se correres sobre `http://IP` |
+| `ADMIN_EMAIL` | o teu email (fica admin + aprovado automaticamente) |
+| `VAPID_PUBLIC_KEY` | (opcional, notificações) `npx web-push generate-vapid-keys` |
+| `VAPID_PRIVATE_KEY` | (opcional, notificações) |
+| `VAPID_SUBJECT` | `mailto:faiz@admfit.pt` |
 
+- ⚠️ A API **recusa arrancar** sem `JWT_ACCESS_SECRET` forte (≥32 caracteres,
+  não um valor de exemplo). Gera com `openssl rand -hex 32`.
+- **Regista a conta `ADMIN_EMAIL` logo após o 1.º deploy** — fica admin +
+  aprovada; as restantes contas ficam pendentes até a aprovares em *Definições*.
 - O Dockerfile corre `prisma migrate deploy` no arranque.
 - Associa um subdomínio (ex: `api.oteudominio.com`).
 - **Seeds:** o backend **semeia automaticamente** no arranque a biblioteca de
@@ -43,7 +52,21 @@ Aplicação a partir do Git, build pelo `apps/frontend/Dockerfile`.
 
 - **Build arg** `NEXT_PUBLIC_API_URL` = `https://api.oteudominio.com/api`
   (é embebido no bundle em build-time, por isso tem de ser um *build arg*, não só env de runtime).
+- **Build arg** `NEXT_PUBLIC_VAPID_PUBLIC_KEY` = a mesma chave pública VAPID do
+  backend (também embebida em build-time — sem ela, as notificações ficam
+  desligadas no cliente).
 - Associa o domínio principal (ex: `app.oteudominio.com`) com HTTPS.
+
+## 4. Notificações (opcional)
+
+1. Define as `VAPID_*` no backend e a `NEXT_PUBLIC_VAPID_PUBLIC_KEY` (a mesma
+   chave pública) no build do frontend.
+2. No telemóvel: abre o site → **instala a PWA** no ecrã principal.
+3. *Definições* → **Ativar notificações** → **Enviar teste**.
+
+Inclui um lembrete diário automático (19h, Lisboa) a quem ainda não registou
+refeições, e um aviso push aos admins quando uma conta nova fica a aguardar
+aprovação.
 
 ## Notas
 
