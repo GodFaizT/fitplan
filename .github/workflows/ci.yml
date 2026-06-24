@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Build shared
+        run: npm run build:shared
+
+      - name: Prisma generate
+        run: npm run prisma:generate -w @fitplan/backend
+
+      - name: Test shared
+        run: npm run test:shared
+
+      - name: Test backend
+        run: npm run test -w @fitplan/backend
+
+      - name: Build backend
+        run: npm run build -w @fitplan/backend
+
+      - name: Build frontend
+        run: npm run build -w @fitplan/frontend
+        env:
+          NEXT_PUBLIC_API_URL: https://example.com/api
+
+      # Lint informativo (não bloqueia o pipeline enquanto se estabiliza)
+      - name: Lint frontend
+        run: npm run lint -w @fitplan/frontend
+        continue-on-error: true
+
+      - name: Lint backend
+        run: npm run lint -w @fitplan/backend
+        continue-on-error: true

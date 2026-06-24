@@ -8,4 +8,5 @@ export const qk = {
   plan: (id: string) => ['plan', id] as const,
   exercises: (q: string) => ['exercises', q] as const,
   facets: () => ['exercise-facets'] as const,
+  weights: () => ['weights'] as const,
 };

@@ -4,6 +4,7 @@ import {
   Dumbbell,
   LayoutDashboard,
   Settings,
+  TrendingUp,
   Utensils,
   Zap,
 } from 'lucide-react';
@@ -16,6 +17,7 @@ const NAV = [
   { href: '/nutricao', label: 'Nutrição', icon: Zap },
   { href: '/refeicoes', label: 'Refeições', icon: Utensils },
   { href: '/treino', label: 'Treino', icon: Dumbbell },
+  { href: '/progresso', label: 'Progresso', icon: TrendingUp },
   { href: '/definicoes', label: 'Definições', icon: Settings },
 ];
 

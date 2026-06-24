@@ -11,6 +11,7 @@ import { MealsModule } from './meals/meals.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { SeedModule } from './seed/seed.module';
 import { UsersModule } from './users/users.module';
+import { WeightsModule } from './weights/weights.module';
 import { WorkoutsModule } from './workouts/workouts.module';
 
 @Module({
@@ -28,6 +29,7 @@ import { WorkoutsModule } from './workouts/workouts.module';
     MealsModule,
     ExercisesModule,
     WorkoutsModule,
+    WeightsModule,
     SeedModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],

@@ -51,6 +51,12 @@ export function weekdayIndex(iso: string): number {
   return new Date(`${iso}T00:00:00`).getDay();
 }
 
+/** "23 jun" — data curta para eixos/legendas de gráficos. */
+export function chartDate(iso: string): string {
+  const d = new Date(`${iso}T00:00:00`);
+  return `${d.getDate()} ${MONTHS[d.getMonth()]}`;
+}
+
 /** "Hoje", "Ontem", "Amanhã" ou "Segunda, 23 jun". */
 export function dateLabel(iso: string): string {
   const today = todayISO();

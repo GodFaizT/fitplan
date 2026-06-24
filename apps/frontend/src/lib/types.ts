@@ -54,6 +54,13 @@ export interface DailyLog {
   meals: Meal[];
 }
 
+export interface WeightEntry {
+  id: string;
+  userId: string;
+  date: string;
+  weightKg: number;
+}
+
 export interface SavedFood {
   id: string;
   name: string;

@@ -8,11 +8,13 @@ import {
   lbToKg,
   type NutritionInput,
 } from '@fitplan/shared';
+import dynamic from 'next/dynamic';
 import { useMemo, useState } from 'react';
-import { MacroCards, MacroDonut } from '@/components/nutrition/macro-display';
+import { MacroCards } from '@/components/nutrition/macro-display';
 import { Button } from '@/components/ui/button';
 import { Card, Eyebrow, SectionTitle } from '@/components/ui/card';
 import { Field, Input, Select } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/misc';
 import { Segmented } from '@/components/ui/segmented';
 import { nutritionFromUser, useUpdateProfile } from '@/hooks/use-nutrition';
 import { useAuthStore } from '@/lib/auth-store';
@@ -24,6 +26,11 @@ import {
   INTENSITY_LABELS,
 } from '@/lib/labels';
 import { toast } from '@/lib/toast';
+
+const MacroDonut = dynamic(
+  () => import('@/components/nutrition/macro-donut'),
+  { ssr: false, loading: () => <Skeleton className="h-44 w-44 rounded-full" /> },
+);
 
 type Units = 'metric' | 'imperial';
 
