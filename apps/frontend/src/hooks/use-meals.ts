@@ -3,12 +3,21 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { qk } from '@/lib/query-keys';
-import type { DailyLog, FoodItem, Meal } from '@/lib/types';
+import type { DailyLog, FoodItem, Meal, RecentFood } from '@/lib/types';
 
 export function useDailyLog(date: string) {
   return useQuery({
     queryKey: qk.meals(date),
     queryFn: () => api.get<DailyLog>(`/logs?date=${date}`),
+  });
+}
+
+/** Alimentos usados recentemente (atalho para re-adicionar). */
+export function useRecentFoods() {
+  return useQuery({
+    queryKey: ['recent-foods'],
+    queryFn: () => api.get<RecentFood[]>('/recent-foods'),
+    staleTime: 1000 * 60,
   });
 }
 
@@ -55,5 +64,19 @@ export function useMealMutations(date: string) {
     onSuccess: invalidate,
   });
 
-  return { addMeal, updateMeal, deleteMeal, addItem, updateItem, deleteItem };
+  const copyDay = useMutation({
+    mutationFn: (from: string) =>
+      api.post<DailyLog>(`/logs/${date}/copy`, { from }),
+    onSuccess: invalidate,
+  });
+
+  return {
+    addMeal,
+    updateMeal,
+    deleteMeal,
+    addItem,
+    updateItem,
+    deleteItem,
+    copyDay,
+  };
 }

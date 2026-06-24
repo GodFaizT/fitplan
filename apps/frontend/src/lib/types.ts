@@ -72,6 +72,17 @@ export interface SavedFood {
   fat: number;
 }
 
+/** Alimento usado recentemente (valores já para a quantidade registada). */
+export interface RecentFood {
+  name: string;
+  quantity: number;
+  unit: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+}
+
 /** Alimento do catálogo global predefinido (leitura). */
 export interface CatalogFood extends SavedFood {
   category: string | null;

@@ -7,7 +7,9 @@ import { Button } from '@/components/ui/button';
 import { Field, Input } from '@/components/ui/input';
 import { Modal } from '@/components/ui/modal';
 import { useFoodLibrary, useFoodMutations, useSavedFoods } from '@/hooks/use-foods';
+import { useRecentFoods } from '@/hooks/use-meals';
 import { foodIcon } from '@/lib/food-icon';
+import type { RecentFood } from '@/lib/types';
 import { fmt } from '@/lib/format';
 import { lookupBarcode } from '@/lib/open-food-facts';
 import { toast } from '@/lib/toast';
@@ -48,6 +50,7 @@ export function AddFoodModal({
   const [search, setSearch] = useState('');
   const saved = useSavedFoods(search);
   const catalog = useFoodLibrary(search);
+  const recent = useRecentFoods();
   const { create } = useFoodMutations();
 
   const [name, setName] = useState('');
@@ -100,6 +103,19 @@ export function AddFoodModal({
     setCarbs(f.carbs);
     setFat(f.fat);
     setQuantity(f.per);
+    setSaveToLib(false);
+  }
+
+  // Re-adicionar um alimento recente: os valores já são para a quantidade usada.
+  function pickRecent(f: RecentFood) {
+    setName(f.name);
+    setPer(f.quantity);
+    setUnit(f.unit);
+    setCalories(f.calories);
+    setProtein(f.protein);
+    setCarbs(f.carbs);
+    setFat(f.fat);
+    setQuantity(f.quantity);
     setSaveToLib(false);
   }
 
@@ -171,6 +187,26 @@ export function AddFoodModal({
 
         {scanning ? (
           <BarcodeScanner onDetected={handleScan} onClose={() => setScanning(false)} />
+        ) : null}
+
+        {!search && (recent.data?.length ?? 0) > 0 ? (
+          <div>
+            <p className="mb-1.5 text-[12px] uppercase tracking-[0.04em] text-text-muted">
+              Recentes
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {recent.data!.slice(0, 12).map((f, i) => (
+                <button
+                  key={`${f.name}-${i}`}
+                  type="button"
+                  onClick={() => pickRecent(f)}
+                  className="rounded-pill border border-line bg-surface-2 px-2.5 py-1 text-[13px] transition hover:border-accent/50"
+                >
+                  {f.name}
+                </button>
+              ))}
+            </div>
+          </div>
         ) : null}
 
         {suggestions.length > 0 ? (

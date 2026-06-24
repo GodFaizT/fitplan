@@ -121,6 +121,74 @@ export class MealsService {
     });
   }
 
+  /** Copia todas as refeições (com alimentos) de um dia para outro. */
+  async copyDay(userId: string, toDate: string, fromDate: string) {
+    const fromD = parseDate(fromDate);
+    const source = await this.prisma.dailyLog.findUnique({
+      where: { userId_date: { userId, date: fromD } },
+      include: {
+        meals: { orderBy: { position: 'asc' }, include: { items: true } },
+      },
+    });
+    const target = await this.getLog(userId, toDate);
+    if (!source || source.meals.length === 0) return target;
+
+    let position = await this.prisma.meal.count({
+      where: { dailyLogId: target.id },
+    });
+    for (const meal of source.meals) {
+      await this.prisma.meal.create({
+        data: {
+          dailyLogId: target.id,
+          type: meal.type,
+          label: meal.label,
+          position: position++,
+          items: {
+            create: meal.items.map((it, i) => ({
+              name: it.name,
+              quantity: it.quantity,
+              unit: it.unit,
+              calories: it.calories,
+              protein: it.protein,
+              carbs: it.carbs,
+              fat: it.fat,
+              position: i,
+            })),
+          },
+        },
+      });
+    }
+    return this.getLog(userId, toDate);
+  }
+
+  /** Alimentos usados recentemente (distintos por nome), para re-adicionar rápido. */
+  async recentFoods(userId: string, limit = 12) {
+    const items = await this.prisma.foodItem.findMany({
+      where: { meal: { dailyLog: { userId } } },
+      orderBy: { meal: { dailyLog: { date: 'desc' } } },
+      take: 80,
+      select: {
+        name: true,
+        quantity: true,
+        unit: true,
+        calories: true,
+        protein: true,
+        carbs: true,
+        fat: true,
+      },
+    });
+    const seen = new Set<string>();
+    const out: typeof items = [];
+    for (const it of items) {
+      const key = it.name.toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push(it);
+      if (out.length >= limit) break;
+    }
+    return out;
+  }
+
   // ---- verificações de propriedade ---------------------------------------
 
   private async ensureMeal(userId: string, mealId: string) {

@@ -32,6 +32,23 @@ export class MealsController {
     return this.meals.getLog(user.id, date);
   }
 
+  /** GET /recent-foods — alimentos recentes para re-adicionar rápido. */
+  @Get('recent-foods')
+  recentFoods(@CurrentUser() user: AuthUser) {
+    return this.meals.recentFoods(user.id);
+  }
+
+  /** POST /logs/:date/copy — copia as refeições de outro dia (body: { from }). */
+  @Post('logs/:date/copy')
+  copyDay(
+    @CurrentUser() user: AuthUser,
+    @Param('date') date: string,
+    @Body('from') from: string,
+  ) {
+    if (!from) throw new BadRequestException('Campo "from" obrigatório');
+    return this.meals.copyDay(user.id, date, from);
+  }
+
   @Post('logs/:date/meals')
   addMeal(
     @CurrentUser() user: AuthUser,

@@ -3,6 +3,7 @@
 import {
   ChevronLeft,
   ChevronRight,
+  CopyPlus,
   Plus,
   Trash2,
   UtensilsCrossed,
@@ -179,7 +180,17 @@ export default function MealsPage() {
         <EmptyState
           icon={UtensilsCrossed}
           title="Ainda não registaste refeições"
-          description="Adiciona a primeira refeição do dia."
+          description="Adiciona a primeira refeição ou copia o dia anterior."
+          action={
+            <Button
+              variant="secondary"
+              onClick={() => m.copyDay.mutate(addDays(date, -1))}
+              disabled={m.copyDay.isPending}
+            >
+              <CopyPlus className="h-4 w-4" />
+              {m.copyDay.isPending ? 'A copiar…' : 'Copiar dia anterior'}
+            </Button>
+          }
         />
       )}
 
