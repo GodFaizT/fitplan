@@ -49,6 +49,7 @@ model User {
   planMemberships PlanMember[]
   ownedPlans      WorkoutPlan[] @relation("owner")
   refreshTokens   RefreshToken[]
+  pushSubscriptions PushSubscription[]
 }
 
 model RefreshToken {
@@ -58,6 +59,18 @@ model RefreshToken {
   tokenHash String
   expiresAt DateTime
   revoked   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
   createdAt DateTime @default(now())
 
   @@index([userId])

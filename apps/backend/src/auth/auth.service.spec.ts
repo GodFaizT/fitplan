@@ -14,6 +14,7 @@ function makeService() {
   const prisma = {
     user: {
       findUnique: vi.fn(),
+      findMany: vi.fn().mockResolvedValue([]),
       create: vi.fn(({ data }: { data: Record<string, unknown> }) =>
         Promise.resolve({ id: 'u1', role: 'user', approved: false, ...data }),
       ),
@@ -38,8 +39,17 @@ function makeService() {
         })[k],
     ),
   };
-  const service = new AuthService(prisma as never, jwt as never, config as never);
-  return { service, prisma, jwt, config };
+  const notifications = {
+    sendToUser: vi.fn(),
+    isEnabled: vi.fn().mockReturnValue(false),
+  };
+  const service = new AuthService(
+    prisma as never,
+    jwt as never,
+    config as never,
+    notifications as never,
+  );
+  return { service, prisma, jwt, config, notifications };
 }
 
 describe('AuthService', () => {

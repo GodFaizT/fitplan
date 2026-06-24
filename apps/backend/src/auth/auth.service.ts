@@ -10,6 +10,7 @@ import { JwtService } from '@nestjs/jwt';
 import { User } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 import { createHash, randomBytes } from 'node:crypto';
+import { NotificationsService } from '../notifications/notifications.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
@@ -39,6 +40,7 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly jwt: JwtService,
     private readonly config: ConfigService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   // ---- API pública --------------------------------------------------------
@@ -62,8 +64,32 @@ export class AuthService {
       },
     });
 
-    if (!user.approved) return { pending: true };
+    if (!user.approved) {
+      await this.notifyAdminsOfPending(user.email);
+      return { pending: true };
+    }
     return this.buildAuthResult(user);
+  }
+
+  /** Avisa os administradores (push) de que há uma conta a aguardar aprovação. */
+  private async notifyAdminsOfPending(email: string): Promise<void> {
+    try {
+      const admins = await this.prisma.user.findMany({
+        where: { role: 'admin' },
+        select: { id: true },
+      });
+      await Promise.all(
+        admins.map((a) =>
+          this.notifications.sendToUser(a.id, {
+            title: 'FitPlan — nova conta',
+            body: `${email} está a aguardar aprovação.`,
+            url: '/definicoes',
+          }),
+        ),
+      );
+    } catch {
+      // notificação é best-effort; nunca falha o registo
+    }
   }
 
   async login(dto: LoginDto): Promise<AuthResult> {

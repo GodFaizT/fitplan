@@ -29,6 +29,7 @@
     "@nestjs/jwt": "^10.2.0",
     "@nestjs/passport": "^10.0.3",
     "@nestjs/platform-express": "^10.4.15",
+    "@nestjs/schedule": "^4.1.2",
     "@nestjs/throttler": "^6.5.0",
     "@prisma/client": "^6.2.1",
     "bcryptjs": "^2.4.3",
@@ -39,7 +40,8 @@
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "web-push": "^3.6.7"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.4.9",
@@ -49,6 +51,7 @@
     "@types/express": "^5.0.0",
     "@types/node": "^22.10.5",
     "@types/passport-jwt": "^4.0.1",
+    "@types/web-push": "^3.6.4",
     "@typescript-eslint/eslint-plugin": "^7.18.0",
     "@typescript-eslint/parser": "^7.18.0",
     "eslint": "^8.57.1",

@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { AdminPanel } from '@/components/admin/admin-panel';
 import { ChangePassword } from '@/components/settings/change-password';
+import { NotificationsCard } from '@/components/settings/notifications';
 import { Button } from '@/components/ui/button';
 import { Card, Eyebrow, SectionTitle } from '@/components/ui/card';
 import { Field, Input } from '@/components/ui/input';
@@ -95,6 +96,8 @@ export default function SettingsPage() {
       </Card>
 
       <ChangePassword />
+
+      <NotificationsCard />
 
       <Card className="flex flex-col gap-4">
         <SectionTitle className="text-[15px]">Unidades</SectionTitle>

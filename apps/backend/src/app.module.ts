@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
+import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AdminModule } from './admin/admin.module';
 import { AuthModule } from './auth/auth.module';
@@ -8,6 +9,7 @@ import { validateEnv } from './config/env.validation';
 import { ExercisesModule } from './exercises/exercises.module';
 import { FoodsModule } from './foods/foods.module';
 import { MealsModule } from './meals/meals.module';
+import { NotificationsModule } from './notifications/notifications.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { SeedModule } from './seed/seed.module';
 import { UsersModule } from './users/users.module';
@@ -21,6 +23,7 @@ import { WorkoutsModule } from './workouts/workouts.module';
     // normal (multi-tab/refocus); os endpoints de auth têm limites bem mais
     // apertados via @Throttle (anti brute-force).
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: 300 }]),
+    ScheduleModule.forRoot(),
     PrismaModule,
     AuthModule,
     AdminModule,
@@ -30,6 +33,7 @@ import { WorkoutsModule } from './workouts/workouts.module';
     ExercisesModule,
     WorkoutsModule,
     WeightsModule,
+    NotificationsModule,
     SeedModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
