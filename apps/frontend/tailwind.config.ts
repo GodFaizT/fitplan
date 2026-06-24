@@ -35,12 +35,17 @@ const config: Config = {
       },
       fontFamily: {
         sans: ['var(--font-sans)', 'system-ui', 'sans-serif'],
+        mono: ['var(--font-mono)', 'ui-monospace', 'SFMono-Regular', 'monospace'],
       },
       fontSize: {
         hero: ['2.25rem', { lineHeight: '1.05', fontWeight: '500' }],
       },
       maxWidth: {
         content: '1100px',
+      },
+      boxShadow: {
+        // brilho subtil da cor de destaque (botões, estados ativos)
+        glow: '0 0 0 1px color-mix(in srgb, var(--accent) 30%, transparent), 0 8px 24px -10px color-mix(in srgb, var(--accent) 45%, transparent)',
       },
       keyframes: {
         'fade-up': {
@@ -49,7 +54,8 @@ const config: Config = {
         },
       },
       animation: {
-        'fade-up': 'fade-up 0.25s ease-out',
+        // `both` mantém o estado inicial durante o animation-delay (stagger)
+        'fade-up': 'fade-up 0.3s ease-out both',
       },
     },
   },

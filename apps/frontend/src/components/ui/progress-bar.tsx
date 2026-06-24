@@ -30,9 +30,16 @@ export function ProgressBar({
       <motion.div
         initial={{ width: 0 }}
         animate={{ width: `${pct}%` }}
-        transition={{ duration: 0.5, ease: 'easeOut' }}
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         className="h-full rounded-pill"
-        style={{ background: over ? 'var(--danger)' : color }}
+        style={{
+          background: over
+            ? 'var(--danger)'
+            : `linear-gradient(90deg, ${color}, color-mix(in srgb, ${color} 70%, #ffffff))`,
+          boxShadow: `0 0 10px -2px color-mix(in srgb, ${
+            over ? 'var(--danger)' : color
+          } 55%, transparent)`,
+        }}
       />
     </div>
   );

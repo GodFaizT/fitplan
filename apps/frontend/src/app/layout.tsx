@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter } from 'next/font/google';
+import { Inter, JetBrains_Mono } from 'next/font/google';
 import { InstallPrompt } from '@/components/pwa/install-prompt';
 import { Providers } from '@/components/providers';
 import { Toaster } from '@/components/ui/toaster';
@@ -9,6 +9,15 @@ const inter = Inter({
   subsets: ['latin'],
   variable: '--font-sans',
   display: 'swap',
+});
+
+// Mono só para os números de destaque (calorias, cargas, macros) — dá um ar
+// de instrumento de medição (PROJECT.md 8.3 permite mono nos números-herói).
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  variable: '--font-mono',
+  display: 'swap',
+  weight: ['500', '600'],
 });
 
 export const metadata: Metadata = {
@@ -47,7 +56,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt" suppressHydrationWarning>
-      <body className={`${inter.variable} font-sans antialiased`}>
+      <body
+        className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}
+      >
         <Providers>{children}</Providers>
         <InstallPrompt />
         <Toaster />

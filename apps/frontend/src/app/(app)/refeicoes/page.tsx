@@ -79,8 +79,10 @@ export default function MealsPage() {
       ) : (
         <Card className="flex flex-col items-center gap-6 sm:flex-row sm:gap-8">
           <Ring value={totals?.calories ?? 0} max={targets.calories}>
-            <span className="text-2xl font-medium tabular">{fmt(totals?.calories ?? 0)}</span>
-            <span className="text-[12px] text-text-muted">de {fmt(targets.calories)}</span>
+            <span className="stat text-2xl font-medium">{fmt(totals?.calories ?? 0)}</span>
+            <span className="text-[12px] text-text-muted">
+              de <span className="stat">{fmt(targets.calories)}</span>
+            </span>
           </Ring>
           <div className="w-full flex-1 space-y-3">
             {MACROS.map((mm) => (
@@ -148,7 +150,7 @@ export default function MealsPage() {
                             </div>
                           </div>
                           <div className="flex shrink-0 items-center gap-2">
-                            <span className="tabular text-sm">{fmt(it.calories)}</span>
+                            <span className="stat text-sm">{fmt(it.calories)}</span>
                             <button
                               onClick={() => m.deleteItem.mutate(it.id)}
                               className="rounded p-1 text-text-muted hover:text-danger"
@@ -216,8 +218,8 @@ function Bar({
           <Icon className="h-3.5 w-3.5" style={{ color: meta.color }} strokeWidth={2.2} />
           {meta.label}
         </span>
-        <span className="tabular text-text-muted">
-          {fmt(value)} / {fmt(max)} g
+        <span className="stat text-text-muted">
+          <span className="text-text">{fmt(value)}</span> / {fmt(max)} g
         </span>
       </div>
       <ProgressBar value={value} max={max} color={meta.color} />

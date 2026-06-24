@@ -99,7 +99,7 @@ export default function NutritionPage() {
         <MacroDonut result={result} />
         <div className="flex-1">
           <div className="flex items-baseline gap-2">
-            <span className="text-hero tabular">{fmt(result.targetCalories)}</span>
+            <span className="text-hero stat">{fmt(result.targetCalories)}</span>
             <span className="text-text-muted">kcal / dia</span>
           </div>
           <p className="mt-1 text-[13px] text-text-muted">

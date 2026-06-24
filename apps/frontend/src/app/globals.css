@@ -20,6 +20,12 @@
   --success: #1d9e75;
   --warning: #ef9f27;
   --danger: #e24b4a;
+
+  /* profundidade e luz (polish) — superfície dos cards com gradiente subtil,
+     realce de 1px no topo (luz) e sombra suave */
+  --surface-elevated: linear-gradient(180deg, #282b30 0%, #222427 100%);
+  --card-shadow: 0 1px 1px rgba(0, 0, 0, 0.18), 0 14px 34px -22px rgba(0, 0, 0, 0.72);
+  --card-hairline: inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 .light {
@@ -31,6 +37,9 @@
   --text-muted: #6b6d6f;
   --accent-text: #1a1c1e;
   /* lima e cores de macro mantêm-se */
+  --surface-elevated: linear-gradient(180deg, #ffffff 0%, #fbfbf9 100%);
+  --card-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 12px 28px -18px rgba(0, 0, 0, 0.12);
+  --card-hairline: inset 0 1px 0 rgba(255, 255, 255, 0.7);
 }
 
 @layer base {
@@ -57,12 +66,51 @@
   }
 }
 
+@layer components {
+  /* superfície elevada dos cards: gradiente + realce no topo + sombra suave */
+  .surface-elevated {
+    background-color: var(--surface);
+    background-image: var(--surface-elevated);
+    box-shadow: var(--card-hairline), var(--card-shadow);
+  }
+  /* elevação subtil no hover, consistente em cards/links interativos */
+  .lift {
+    transition:
+      transform 0.18s ease,
+      box-shadow 0.18s ease,
+      border-color 0.18s ease;
+  }
+  .lift:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(in srgb, var(--accent) 38%, var(--border));
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .lift:hover {
+      transform: none;
+    }
+  }
+}
+
 @layer utilities {
   .safe-bottom {
     padding-bottom: env(safe-area-inset-bottom);
   }
   .safe-top {
     padding-top: env(safe-area-inset-top);
+  }
+  /* números de destaque: mono + tabular para alinhar e ganhar ar de instrumento */
+  .stat {
+    font-family: var(--font-mono), ui-monospace, SFMono-Regular, monospace;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+  }
+  /* halo subtil da cor de destaque (usar num elemento absoluto atrás do herói) */
+  .glow-accent {
+    background: radial-gradient(
+      50% 50% at 50% 50%,
+      color-mix(in srgb, var(--accent) 22%, transparent),
+      transparent 70%
+    );
   }
   /* esconder scrollbar em carrosséis */
   .no-scrollbar::-webkit-scrollbar {

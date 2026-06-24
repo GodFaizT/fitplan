@@ -34,7 +34,7 @@ export function MacroDonut({ result }: { result: NutritionResult }) {
         </PieChart>
       </ResponsiveContainer>
       <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-2xl font-medium tabular">
+        <span className="stat text-2xl font-medium">
           {fmt(result.targetCalories)}
         </span>
         <span className="text-[12px] text-text-muted">kcal</span>
@@ -58,9 +58,9 @@ export function MacroCards({ result }: { result: NutritionResult }) {
               />
               <span className="text-[12px] text-text-muted">{m.label}</span>
             </div>
-            <p className="mt-2 text-xl font-medium tabular">
+            <p className="mt-2 stat text-xl font-medium">
               {fmt(result.macros[m.key])}
-              <span className="ml-0.5 text-sm text-text-muted">g</span>
+              <span className="ml-0.5 text-sm font-normal text-text-muted">g</span>
             </p>
             <p className="text-[12px] text-text-muted">
               {result.macroPercents[m.key]}%
