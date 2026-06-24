@@ -14,6 +14,7 @@ import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useState } from 'react';
 import { ExercisePicker } from '@/components/workout/exercise-picker';
+import { TrainingSession } from '@/components/workout/training-session';
 import { YouTubeEmbed } from '@/components/workout/youtube-embed';
 import { Button } from '@/components/ui/button';
 import { Card, Eyebrow } from '@/components/ui/card';
@@ -188,23 +189,24 @@ function PlanDetailInner() {
               title="Dia sem exercícios"
               description={mine ? 'Adiciona exercícios da biblioteca ou manualmente.' : undefined}
             />
+          ) : trainingMode ? (
+            <TrainingSession
+              key={selectedDay.id}
+              exercises={selectedDay.exercises}
+            />
           ) : (
-            selectedDay.exercises.map((ex, i) =>
-              trainingMode ? (
-                <TrainingCard key={ex.id} ex={ex} index={i} />
-              ) : (
-                <ExerciseRow
-                  key={ex.id}
-                  ex={ex}
-                  index={i}
-                  count={selectedDay.exercises.length}
-                  editable={mine}
-                  onMove={(dir) => moveExercise(selectedDay, i, dir)}
-                  onEdit={() => setEditEx(ex)}
-                  onDelete={() => mut.deleteExercise.mutate(ex.id)}
-                />
-              ),
-            )
+            selectedDay.exercises.map((ex, i) => (
+              <ExerciseRow
+                key={ex.id}
+                ex={ex}
+                index={i}
+                count={selectedDay.exercises.length}
+                editable={mine}
+                onMove={(dir) => moveExercise(selectedDay, i, dir)}
+                onEdit={() => setEditEx(ex)}
+                onDelete={() => mut.deleteExercise.mutate(ex.id)}
+              />
+            ))
           )}
 
           {mine && !trainingMode ? (
@@ -328,39 +330,6 @@ function ExerciseRow({
           ) : null}
         </div>
       ) : null}
-    </Card>
-  );
-}
-
-/** Vista "treino do dia": exercício em foco, com vídeo/imagens. PROJECT.md 6.3. */
-function TrainingCard({ ex, index }: { ex: PlanExercise; index: number }) {
-  return (
-    <Card className="flex flex-col gap-3">
-      <div className="flex items-baseline justify-between">
-        <p className="font-medium">
-          <span className="text-text-muted">{index + 1}.</span> {ex.name}
-        </p>
-        <span className="text-sm text-accent">
-          {ex.sets} × {ex.reps}
-        </span>
-      </div>
-      <div className="flex gap-3 text-[13px] text-text-muted">
-        <span>Descanso {ex.restSeconds}s</span>
-        {ex.weight ? <span>· {ex.weight} kg</span> : null}
-        <span>· {muscleLabel(ex.muscleGroup)}</span>
-      </div>
-      {ex.videoUrl ? (
-        <YouTubeEmbed url={ex.videoUrl} name={ex.name} />
-      ) : ex.imageUrls.length > 0 ? (
-        <div className="flex gap-2">
-          {ex.imageUrls.slice(0, 2).map((src) => (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img key={src} src={src} alt="" className="h-36 w-1/2 rounded-lg object-cover" loading="lazy" />
-          ))}
-        </div>
-      ) : (
-        <YouTubeEmbed url={null} name={ex.name} />
-      )}
     </Card>
   );
 }
