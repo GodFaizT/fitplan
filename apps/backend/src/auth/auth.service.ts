@@ -17,6 +17,13 @@ import { RegisterDto } from './dto/register.dto';
 /** Utilizador sem campos sensíveis, seguro para devolver ao cliente. */
 export type SafeUser = Omit<User, 'passwordHash'>;
 
+/**
+ * Hash bcrypt descartável (cost 10) gerado no arranque. Permite fazer sempre um
+ * bcrypt.compare no login — mesmo quando o email não existe — nivelando o tempo
+ * de resposta e mitigando a enumeração de contas por timing.
+ */
+const DUMMY_PASSWORD_HASH = bcrypt.hashSync(randomBytes(16).toString('hex'), 10);
+
 export interface AuthTokens {
   accessToken: string;
   refreshToken: string;
@@ -62,11 +69,13 @@ export class AuthService {
   async login(dto: LoginDto): Promise<AuthResult> {
     const email = dto.email.toLowerCase().trim();
     let user = await this.prisma.user.findUnique({ where: { email } });
-    if (!user) {
-      throw new UnauthorizedException('Credenciais inválidas');
-    }
-    const ok = await bcrypt.compare(dto.password, user.passwordHash);
-    if (!ok) {
+    // Compara sempre — com um hash descartável se o utilizador não existir —
+    // para não revelar por timing se o email está registado.
+    const ok = await bcrypt.compare(
+      dto.password,
+      user?.passwordHash ?? DUMMY_PASSWORD_HASH,
+    );
+    if (!user || !ok) {
       throw new UnauthorizedException('Credenciais inválidas');
     }
 
@@ -123,12 +132,15 @@ export class AuthService {
     });
   }
 
-  /** Troca a password (verifica a atual). */
+  /**
+   * Troca a password (verifica a atual), revoga todas as sessões existentes e
+   * emite uma sessão nova para o dispositivo atual continuar ligado.
+   */
   async changePassword(
     userId: string,
     currentPassword: string,
     newPassword: string,
-  ): Promise<{ ok: true }> {
+  ): Promise<AuthResult> {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new UnauthorizedException();
 
@@ -136,11 +148,20 @@ export class AuthService {
     if (!ok) throw new BadRequestException('A password atual está incorreta');
 
     const passwordHash = await bcrypt.hash(newPassword, 10);
-    await this.prisma.user.update({
+    const updated = await this.prisma.user.update({
       where: { id: userId },
       data: { passwordHash },
     });
-    return { ok: true };
+
+    // Invalida todas as sessões (refresh tokens) — incluindo as de outros
+    // dispositivos — após a mudança de password.
+    await this.prisma.refreshToken.updateMany({
+      where: { userId, revoked: false },
+      data: { revoked: true },
+    });
+
+    // Emite tokens novos para o dispositivo atual não ficar deslogado.
+    return this.buildAuthResult(updated);
   }
 
   async me(userId: string): Promise<SafeUser> {

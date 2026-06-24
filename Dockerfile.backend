@@ -30,6 +30,8 @@ COPY --from=build /app/apps/backend/prisma apps/backend/prisma
 COPY --from=build /app/node_modules/.prisma node_modules/.prisma
 COPY --from=build /app/node_modules/prisma node_modules/prisma
 COPY --from=build /app/node_modules/@prisma node_modules/@prisma
+# Corre como utilizador não-root (o utilizador `node` já existe na imagem oficial).
+USER node
 EXPOSE 3001
 # Aplica as migrações e arranca a API.
 CMD ["sh", "-c", "node node_modules/prisma/build/index.js migrate deploy --schema apps/backend/prisma/schema.prisma && node apps/backend/dist/main.js"]

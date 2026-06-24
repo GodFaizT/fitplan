@@ -9,6 +9,7 @@ import {
   Sex,
 } from '@fitplan/shared';
 import { PrismaService } from '../prisma/prisma.service';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 
 export type SafeUser = Omit<User, 'passwordHash'>;
 
@@ -29,10 +30,27 @@ export class UsersService {
     return this.sanitize(user);
   }
 
-  async updateProfile(userId: string, dto: Partial<User>): Promise<SafeUser> {
+  async updateProfile(
+    userId: string,
+    dto: UpdateProfileDto,
+  ): Promise<SafeUser> {
+    // Lista explícita de campos atualizáveis — nunca role/approved/email/
+    // passwordHash. (Prisma ignora `undefined`; `null` limpa o campo.)
     const updated = await this.prisma.user.update({
       where: { id: userId },
-      data: dto,
+      data: {
+        name: dto.name,
+        sex: dto.sex,
+        age: dto.age,
+        weightKg: dto.weightKg,
+        heightCm: dto.heightCm,
+        activityLevel: dto.activityLevel,
+        goal: dto.goal,
+        goalIntensity: dto.goalIntensity,
+        units: dto.units,
+        accentColor: dto.accentColor,
+        theme: dto.theme,
+      },
     });
 
     // recalcular e cachear os alvos sempre que o perfil muda (PROJECT.md 5.6)

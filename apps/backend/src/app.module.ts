@@ -1,7 +1,10 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AdminModule } from './admin/admin.module';
 import { AuthModule } from './auth/auth.module';
+import { validateEnv } from './config/env.validation';
 import { ExercisesModule } from './exercises/exercises.module';
 import { FoodsModule } from './foods/foods.module';
 import { MealsModule } from './meals/meals.module';
@@ -12,7 +15,11 @@ import { WorkoutsModule } from './workouts/workouts.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({ isGlobal: true, validate: validateEnv }),
+    // Rate limiting global (backstop anti-abuso). Limite generoso para o uso
+    // normal (multi-tab/refocus); os endpoints de auth têm limites bem mais
+    // apertados via @Throttle (anti brute-force).
+    ThrottlerModule.forRoot([{ ttl: 60_000, limit: 300 }]),
     PrismaModule,
     AuthModule,
     AdminModule,
@@ -23,5 +30,6 @@ import { WorkoutsModule } from './workouts/workouts.module';
     WorkoutsModule,
     SeedModule,
   ],
+  providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
 export class AppModule {}

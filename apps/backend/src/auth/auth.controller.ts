@@ -10,6 +10,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { Throttle } from '@nestjs/throttler';
 import { Request, Response } from 'express';
 import { AuthResult, AuthService } from './auth.service';
 import { AuthUser, CurrentUser } from './decorators/current-user.decorator';
@@ -28,6 +29,7 @@ export class AuthController {
   ) {}
 
   @Post('register')
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   async register(
     @Body() dto: RegisterDto,
     @Res({ passthrough: true }) res: Response,
@@ -39,6 +41,7 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   async login(
     @Body() dto: LoginDto,
     @Res({ passthrough: true }) res: Response,
@@ -49,6 +52,7 @@ export class AuthController {
 
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 30, ttl: 60_000 } })
   async refresh(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     const raw = this.readRefreshToken(req);
     const result = await this.auth.refresh(raw);
@@ -72,12 +76,20 @@ export class AuthController {
 
   @Post('change-password')
   @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @UseGuards(JwtAuthGuard)
-  changePassword(
+  async changePassword(
     @CurrentUser() user: AuthUser,
     @Body() dto: ChangePasswordDto,
+    @Res({ passthrough: true }) res: Response,
   ) {
-    return this.auth.changePassword(user.id, dto.currentPassword, dto.newPassword);
+    const result = await this.auth.changePassword(
+      user.id,
+      dto.currentPassword,
+      dto.newPassword,
+    );
+    // Roda o cookie de refresh (as sessões antigas foram revogadas no serviço).
+    return this.respond(result, res);
   }
 
   // ---- helpers ------------------------------------------------------------

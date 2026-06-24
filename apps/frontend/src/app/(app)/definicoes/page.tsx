@@ -1,5 +1,6 @@
 'use client';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { LogOut, RotateCcw } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useRouter } from 'next/navigation';
@@ -14,6 +15,7 @@ import { useUpdateProfile } from '@/hooks/use-nutrition';
 import { logoutRequest } from '@/lib/api';
 import { useAuthStore } from '@/lib/auth-store';
 import { api } from '@/lib/api';
+import { QUERY_CACHE_KEY } from '@/lib/query-keys';
 import { toast } from '@/lib/toast';
 
 const ACCENTS = [
@@ -32,6 +34,7 @@ export default function SettingsPage() {
   const update = useUpdateProfile();
   const { theme, setTheme } = useTheme();
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const [name, setName] = useState(user?.name ?? '');
 
@@ -59,6 +62,14 @@ export default function SettingsPage() {
   async function onLogout() {
     await logoutRequest();
     clear();
+    // Limpa os dados pessoais em cache (memória + localStorage) para não ficarem
+    // acessíveis ao próximo utilizador no mesmo dispositivo (PWA partilhada).
+    queryClient.clear();
+    try {
+      localStorage.removeItem(QUERY_CACHE_KEY);
+    } catch {
+      /* localStorage indisponível */
+    }
     router.replace('/login');
   }
 

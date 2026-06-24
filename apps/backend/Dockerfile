@@ -31,6 +31,8 @@ COPY --from=build /app/apps/backend/prisma apps/backend/prisma
 COPY --from=build /app/node_modules/.prisma node_modules/.prisma
 COPY --from=build /app/node_modules/prisma node_modules/prisma
 COPY --from=build /app/node_modules/@prisma node_modules/@prisma
+# Corre como utilizador não-root (o utilizador `node` já existe na imagem oficial).
+USER node
 EXPOSE 3001
 # Aplica as migrações e arranca a API. Correr o seed dos exercícios uma vez
 # (ver DEPLOY.md): npm run seed:exercises -w @fitplan/backend

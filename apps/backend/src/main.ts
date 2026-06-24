@@ -1,11 +1,26 @@
 import 'reflect-metadata';
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import cookieParser from 'cookie-parser';
+import helmet from 'helmet';
 import { AppModule } from './app.module';
 
 async function bootstrap(): Promise<void> {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  // Atrás de um reverse proxy (Traefik/Dokploy): confiar no 1.º hop para obter
+  // o IP real do cliente (necessário para o rate limiting e cookies Secure).
+  app.set('trust proxy', 1);
+
+  // Cabeçalhos de segurança. CSP desligada (API JSON, não renderiza HTML) e CORP
+  // em cross-origin para não interferir com o consumo da API pelo frontend.
+  app.use(
+    helmet({
+      contentSecurityPolicy: false,
+      crossOriginResourcePolicy: { policy: 'cross-origin' },
+    }),
+  );
 
   app.use(cookieParser());
   app.setGlobalPrefix('api');

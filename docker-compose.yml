@@ -6,7 +6,7 @@ services:
     image: postgres:17-alpine
     environment:
       POSTGRES_USER: fitplan
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-fitplan}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD no .env}
       POSTGRES_DB: fitplan
     volumes:
       - pgdata:/var/lib/postgresql/data
@@ -17,9 +17,9 @@ services:
       context: .
       dockerfile: apps/backend/Dockerfile
     environment:
-      DATABASE_URL: postgresql://fitplan:${POSTGRES_PASSWORD:-fitplan}@postgres:5432/fitplan?schema=public
-      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-change-me-access}
-      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-change-me-refresh}
+      DATABASE_URL: postgresql://fitplan:${POSTGRES_PASSWORD}@postgres:5432/fitplan?schema=public
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:?defina JWT_ACCESS_SECRET no .env (openssl rand -hex 32)}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?defina JWT_REFRESH_SECRET no .env (openssl rand -hex 32)}
       JWT_ACCESS_TTL: 15m
       JWT_REFRESH_TTL_DAYS: "30"
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}

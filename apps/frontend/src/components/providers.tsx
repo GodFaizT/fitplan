@@ -7,6 +7,7 @@ import { ThemeProvider, useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
 import { bootstrapAuth } from '@/lib/api';
 import { useAuthStore } from '@/lib/auth-store';
+import { QUERY_CACHE_KEY } from '@/lib/query-keys';
 
 function makeQueryClient(): QueryClient {
   return new QueryClient({
@@ -57,7 +58,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       ? undefined
       : createSyncStoragePersister({
           storage: window.localStorage,
-          key: 'fitplan-query-cache',
+          key: QUERY_CACHE_KEY,
           throttleTime: 1000,
         }),
   );

@@ -26,5 +26,8 @@ ENV PORT=3000
 COPY --from=build /app/apps/frontend/.next/standalone ./
 COPY --from=build /app/apps/frontend/.next/static ./apps/frontend/.next/static
 COPY --from=build /app/apps/frontend/public ./apps/frontend/public
+# Cache com escrita para o utilizador não-root, e corre como `node` (não-root).
+RUN mkdir -p apps/frontend/.next/cache && chown -R node:node apps/frontend/.next/cache
+USER node
 EXPOSE 3000
 CMD ["node", "apps/frontend/server.js"]

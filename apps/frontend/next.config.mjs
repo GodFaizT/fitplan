@@ -1,5 +1,30 @@
 import withSerwistInit from '@serwist/next';
 
+// Cabeçalhos de segurança aplicados a todas as respostas.
+// CSP conservadora: trava clickjacking (frame-ancestors), injeção de <base> e o
+// alvo de formulários, e bloqueia plugins (object-src). Não restringe
+// script/style/img/connect para não partir o Next/PWA — um bloqueio total de
+// script-src exigiria nonces (middleware), possível evolução futura.
+const securityHeaders = [
+  { key: 'X-Frame-Options', value: 'DENY' },
+  { key: 'X-Content-Type-Options', value: 'nosniff' },
+  { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+  {
+    key: 'Permissions-Policy',
+    value: 'camera=(self), microphone=(), geolocation=()',
+  },
+  { key: 'Strict-Transport-Security', value: 'max-age=15552000' },
+  {
+    key: 'Content-Security-Policy',
+    value: [
+      "frame-ancestors 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+      "object-src 'none'",
+    ].join('; '),
+  },
+];
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -9,6 +34,9 @@ const nextConfig = {
   transpilePackages: ['@fitplan/shared'],
   // ESLint não está configurado neste projeto; não bloquear o build com lint
   eslint: { ignoreDuringBuilds: true },
+  async headers() {
+    return [{ source: '/:path*', headers: securityHeaders }];
+  },
   images: {
     remotePatterns: [
       // imagens dos exercícios (Free Exercise DB, URLs raw do GitHub)
