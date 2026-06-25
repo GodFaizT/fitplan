@@ -5,7 +5,8 @@ import dynamic from 'next/dynamic';
 import { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, SectionTitle } from '@/components/ui/card';
-import { Field, Input } from '@/components/ui/input';
+import { Field } from '@/components/ui/input';
+import { NumberInput } from '@/components/ui/number-input';
 import { EmptyState, Skeleton } from '@/components/ui/misc';
 import {
   useMeasurementMutations,
@@ -30,7 +31,7 @@ export function MeasurementsTab() {
   const measurements = useMeasurements();
   const { upsert, remove } = useMeasurementMutations();
   const [type, setType] = useState<string>('waist');
-  const [value, setValue] = useState('');
+  const [value, setValue] = useState<number | null>(null);
 
   const all = measurements.data ?? [];
   const forType = useMemo(
@@ -50,14 +51,13 @@ export function MeasurementsTab() {
   const latest = forType.at(-1) ?? null;
 
   async function save() {
-    const v = Number(value);
-    if (!v || v <= 0) return;
+    if (value == null || value <= 0) return;
     await upsert.mutateAsync({
       date: todayISO(),
       type,
-      value: Math.round(toCm(v) * 10) / 10,
+      value: Math.round(toCm(value) * 10) / 10,
     });
-    setValue('');
+    setValue(null);
   }
 
   return (
@@ -117,12 +117,9 @@ export function MeasurementsTab() {
         <div className="flex items-end gap-2">
           <div className="flex-1">
             <Field label={`Medida (${unit})`}>
-              <Input
-                type="number"
-                step="0.1"
-                inputMode="decimal"
+              <NumberInput
                 value={value}
-                onChange={(e) => setValue(e.target.value)}
+                onValueChange={setValue}
                 placeholder={latest ? fmt(toDisplay(latest.value), 1) : '80'}
               />
             </Field>

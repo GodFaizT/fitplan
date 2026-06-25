@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, Eyebrow } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
+import { NumberInput } from '@/components/ui/number-input';
 import { YouTubeEmbed } from '@/components/workout/youtube-embed';
 import { useSessionMutations } from '@/hooks/use-sessions';
 import { muscleLabel } from '@/lib/labels';
@@ -15,21 +15,21 @@ import { RestTimer } from './rest-timer';
 
 interface SetEntry {
   done: boolean;
-  weight: string;
-  reps: string;
+  weight: number | null;
+  reps: number | null;
 }
 
-/** Primeiro inteiro de uma string de reps ("8-12" → "8"). */
-function firstReps(reps: string): string {
+/** Primeiro inteiro de uma string de reps ("8-12" → 8), ou null. */
+function firstReps(reps: string): number | null {
   const m = reps.match(/\d+/);
-  return m ? m[0] : '';
+  return m ? Number(m[0]) : null;
 }
 
 function defaultEntries(ex: PlanExercise): SetEntry[] {
   const sets = Math.max(ex.sets, 1);
   return Array.from({ length: sets }, () => ({
     done: false,
-    weight: ex.weight != null ? String(ex.weight) : '',
+    weight: ex.weight ?? null,
     reps: firstReps(ex.reps),
   }));
 }
@@ -94,14 +94,12 @@ export function TrainingSession({
       if (!es) continue;
       es.forEach((s, j) => {
         if (!s.done) return;
-        const weight = s.weight === '' ? undefined : Number(s.weight);
-        const reps = s.reps === '' ? undefined : Number(s.reps);
         out.push({
           exerciseName: e.name,
           muscleGroup: e.muscleGroup ?? undefined,
           setNumber: j + 1,
-          weight: Number.isFinite(weight) ? weight : undefined,
-          reps: Number.isFinite(reps) ? reps : undefined,
+          weight: s.weight ?? undefined,
+          reps: s.reps ?? undefined,
         });
       });
     }
@@ -250,20 +248,17 @@ export function TrainingSession({
                 >
                   {e.done ? <Check className="h-5 w-5" /> : j + 1}
                 </button>
-                <Input
-                  type="number"
-                  inputMode="decimal"
+                <NumberInput
                   value={e.weight}
-                  onChange={(ev) => updateEntry(j, { weight: ev.target.value })}
+                  onValueChange={(n) => updateEntry(j, { weight: n })}
                   className="stat h-11 flex-1 text-center"
                   aria-label={`Carga da série ${j + 1} (kg)`}
                   placeholder="—"
                 />
-                <Input
-                  type="number"
-                  inputMode="numeric"
+                <NumberInput
                   value={e.reps}
-                  onChange={(ev) => updateEntry(j, { reps: ev.target.value })}
+                  onValueChange={(n) => updateEntry(j, { reps: n })}
+                  inputMode="numeric"
                   className="stat h-11 flex-1 text-center"
                   aria-label={`Reps da série ${j + 1}`}
                   placeholder="—"

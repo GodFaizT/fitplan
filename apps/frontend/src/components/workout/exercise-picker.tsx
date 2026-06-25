@@ -4,6 +4,7 @@ import { Search } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Field, Input, Select } from '@/components/ui/input';
+import { NumberInput } from '@/components/ui/number-input';
 import { Skeleton } from '@/components/ui/misc';
 import { Modal } from '@/components/ui/modal';
 import { Segmented } from '@/components/ui/segmented';
@@ -33,19 +34,18 @@ function ParamsForm({
   return (
     <div className="mt-3 grid grid-cols-2 gap-3 rounded-xl bg-surface-2 p-3 sm:grid-cols-4">
       <Field label="Séries">
-        <Input type="number" value={sets} onChange={(e) => setSets(Number(e.target.value))} />
+        <NumberInput value={sets} onValueChange={(n) => setSets(n ?? 0)} />
       </Field>
       <Field label="Reps">
         <Input value={reps} onChange={(e) => setReps(e.target.value)} />
       </Field>
       <Field label="Descanso (s)">
-        <Input type="number" value={rest} onChange={(e) => setRest(Number(e.target.value))} />
+        <NumberInput value={rest} onValueChange={(n) => setRest(n ?? 0)} />
       </Field>
       <Field label="Carga (kg)">
-        <Input
-          type="number"
-          value={weight}
-          onChange={(e) => setWeight(e.target.value === '' ? '' : Number(e.target.value))}
+        <NumberInput
+          value={weight === '' ? null : weight}
+          onValueChange={(n) => setWeight(n ?? '')}
         />
       </Field>
       <div className="col-span-2 sm:col-span-4">

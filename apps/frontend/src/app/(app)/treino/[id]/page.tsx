@@ -20,6 +20,7 @@ import { Button } from '@/components/ui/button';
 import { Card, Eyebrow } from '@/components/ui/card';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Field, Input } from '@/components/ui/input';
+import { NumberInput } from '@/components/ui/number-input';
 import { EmptyState, Skeleton } from '@/components/ui/misc';
 import { Modal } from '@/components/ui/modal';
 import { usePlan, usePlanMutations } from '@/hooks/use-plans';
@@ -416,20 +417,19 @@ function EditExerciseModal({
       <div className="flex flex-col gap-4">
         <div className="grid grid-cols-3 gap-3">
           <Field label="Séries">
-            <Input type="number" value={sets} onChange={(e) => setSets(Number(e.target.value))} />
+            <NumberInput value={sets} onValueChange={(n) => setSets(n ?? 0)} />
           </Field>
           <Field label="Reps">
             <Input value={reps} onChange={(e) => setReps(e.target.value)} />
           </Field>
           <Field label="Descanso (s)">
-            <Input type="number" value={rest} onChange={(e) => setRest(Number(e.target.value))} />
+            <NumberInput value={rest} onValueChange={(n) => setRest(n ?? 0)} />
           </Field>
         </div>
         <Field label="Carga (kg)">
-          <Input
-            type="number"
-            value={weight}
-            onChange={(e) => setWeight(e.target.value === '' ? '' : Number(e.target.value))}
+          <NumberInput
+            value={weight === '' ? null : weight}
+            onValueChange={(n) => setWeight(n ?? '')}
           />
         </Field>
         <Field label="Vídeo (URL do YouTube)">

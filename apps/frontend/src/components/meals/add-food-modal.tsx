@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Field, Input } from '@/components/ui/input';
 import { Modal } from '@/components/ui/modal';
+import { NumberInput } from '@/components/ui/number-input';
 import { useFoodLibrary, useFoodMutations, useSavedFoods } from '@/hooks/use-foods';
 import { useRecentFoods } from '@/hooks/use-meals';
 import { foodIcon } from '@/lib/food-icon';
@@ -301,11 +302,9 @@ export function AddFoodModal({
           )}
 
           <Field label={`Quantidade (${unit})`}>
-            <Input
-              type="number"
-              inputMode="decimal"
+            <NumberInput
               value={quantity}
-              onChange={(e) => setQuantity(Number(e.target.value))}
+              onValueChange={(n) => setQuantity(n ?? 0)}
               autoFocus={!manual}
               className="stat text-lg"
             />
@@ -327,11 +326,9 @@ export function AddFoodModal({
               <div className="grid grid-cols-2 gap-3">
                 <Field label="Valores por">
                   <div className="flex gap-2">
-                    <Input
-                      type="number"
-                      inputMode="decimal"
+                    <NumberInput
                       value={per}
-                      onChange={(e) => setPer(Number(e.target.value))}
+                      onValueChange={(n) => setPer(n ?? 0)}
                       className="w-20"
                     />
                     <Input
@@ -342,37 +339,29 @@ export function AddFoodModal({
                   </div>
                 </Field>
                 <Field label="Calorias (kcal)">
-                  <Input
-                    type="number"
-                    inputMode="decimal"
+                  <NumberInput
                     value={calories}
-                    onChange={(e) => setCalories(Number(e.target.value))}
+                    onValueChange={(n) => setCalories(n ?? 0)}
                   />
                 </Field>
               </div>
               <div className="grid grid-cols-3 gap-2">
                 <Field label="Prot.">
-                  <Input
-                    type="number"
-                    inputMode="decimal"
+                  <NumberInput
                     value={protein}
-                    onChange={(e) => setProtein(Number(e.target.value))}
+                    onValueChange={(n) => setProtein(n ?? 0)}
                   />
                 </Field>
                 <Field label="Hidr.">
-                  <Input
-                    type="number"
-                    inputMode="decimal"
+                  <NumberInput
                     value={carbs}
-                    onChange={(e) => setCarbs(Number(e.target.value))}
+                    onValueChange={(n) => setCarbs(n ?? 0)}
                   />
                 </Field>
                 <Field label="Gord.">
-                  <Input
-                    type="number"
-                    inputMode="decimal"
+                  <NumberInput
                     value={fat}
-                    onChange={(e) => setFat(Number(e.target.value))}
+                    onValueChange={(n) => setFat(n ?? 0)}
                   />
                 </Field>
               </div>

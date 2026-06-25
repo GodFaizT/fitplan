@@ -13,7 +13,8 @@ import { useMemo, useState } from 'react';
 import { MacroCards } from '@/components/nutrition/macro-display';
 import { Button } from '@/components/ui/button';
 import { Card, Eyebrow, SectionTitle } from '@/components/ui/card';
-import { Field, Input, Select } from '@/components/ui/input';
+import { Field, Select } from '@/components/ui/input';
+import { NumberInput } from '@/components/ui/number-input';
 import { Skeleton } from '@/components/ui/misc';
 import { Segmented } from '@/components/ui/segmented';
 import { nutritionFromUser, useUpdateProfile } from '@/hooks/use-nutrition';
@@ -148,61 +149,53 @@ export default function NutritionPage() {
           </Field>
 
           <Field label="Idade">
-            <Input
-              type="number"
-              min={10}
-              max={120}
+            <NumberInput
+              inputMode="numeric"
               value={age}
-              onChange={(e) => setAge(Number(e.target.value))}
+              onValueChange={(n) => setAge(n ?? 0)}
             />
           </Field>
 
           {units === 'metric' ? (
             <Field label="Peso (kg)">
-              <Input
-                type="number"
-                step="0.1"
+              <NumberInput
                 value={weightKg}
-                onChange={(e) => setWeightKg(Number(e.target.value))}
+                onValueChange={(n) => setWeightKg(n ?? 0)}
               />
             </Field>
           ) : (
             <Field label="Peso (lb)">
-              <Input
-                type="number"
-                step="0.1"
+              <NumberInput
                 value={Math.round(kgToLb(weightKg) * 10) / 10}
-                onChange={(e) => setWeightKg(lbToKg(Number(e.target.value)))}
+                onValueChange={(n) => setWeightKg(lbToKg(n ?? 0))}
               />
             </Field>
           )}
 
           {units === 'metric' ? (
             <Field label="Altura (cm)">
-              <Input
-                type="number"
-                step="0.1"
+              <NumberInput
                 value={heightCm}
-                onChange={(e) => setHeightCm(Number(e.target.value))}
+                onValueChange={(n) => setHeightCm(n ?? 0)}
               />
             </Field>
           ) : (
             <Field label="Altura (ft / in)">
               <div className="flex gap-2">
-                <Input
-                  type="number"
+                <NumberInput
+                  inputMode="numeric"
                   aria-label="pés"
                   value={ft.feet}
-                  onChange={(e) =>
-                    setHeightCm(feetInchesToCm(Number(e.target.value), ft.inches))
+                  onValueChange={(n) =>
+                    setHeightCm(feetInchesToCm(n ?? 0, ft.inches))
                   }
                 />
-                <Input
-                  type="number"
+                <NumberInput
+                  inputMode="numeric"
                   aria-label="polegadas"
                   value={ft.inches}
-                  onChange={(e) =>
-                    setHeightCm(feetInchesToCm(ft.feet, Number(e.target.value)))
+                  onValueChange={(n) =>
+                    setHeightCm(feetInchesToCm(ft.feet, n ?? 0))
                   }
                 />
               </div>

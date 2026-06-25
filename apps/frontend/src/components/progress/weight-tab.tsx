@@ -6,7 +6,8 @@ import dynamic from 'next/dynamic';
 import { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, SectionTitle } from '@/components/ui/card';
-import { Field, Input } from '@/components/ui/input';
+import { Field } from '@/components/ui/input';
+import { NumberInput } from '@/components/ui/number-input';
 import { EmptyState, Skeleton } from '@/components/ui/misc';
 import { useWeightMutations, useWeights } from '@/hooks/use-weights';
 import { useAuthStore } from '@/lib/auth-store';
@@ -43,16 +44,15 @@ export function WeightTab() {
   const deltaKg = latest && first ? latest.weightKg - first.weightKg : 0;
   const deltaSign = deltaKg < 0 ? '−' : deltaKg > 0 ? '+' : '';
 
-  const [value, setValue] = useState('');
+  const [value, setValue] = useState<number | null>(null);
 
   async function save() {
-    const v = Number(value);
-    if (!v || v <= 0) return;
+    if (value == null || value <= 0) return;
     await upsert.mutateAsync({
       date: todayISO(),
-      weightKg: Math.round(toKg(v) * 10) / 10,
+      weightKg: Math.round(toKg(value) * 10) / 10,
     });
-    setValue('');
+    setValue(null);
   }
 
   return (
@@ -96,12 +96,9 @@ export function WeightTab() {
         <div className="flex items-end gap-2">
           <div className="flex-1">
             <Field label={`Peso (${unit})`}>
-              <Input
-                type="number"
-                step="0.1"
-                inputMode="decimal"
+              <NumberInput
                 value={value}
-                onChange={(e) => setValue(e.target.value)}
+                onValueChange={setValue}
                 placeholder={latest ? fmt(toDisplay(latest.weightKg), 1) : '75'}
               />
             </Field>
