@@ -52,10 +52,18 @@ export class SeedService implements OnApplicationBootstrap {
 
   private async seedFoods(): Promise<void> {
     try {
-      const count = await this.prisma.foodLibrary.count();
-      if (count > 0) return;
-      await this.prisma.foodLibrary.createMany({ data: COMMON_FOODS });
-      this.logger.log(`Catálogo de alimentos semeado: ${COMMON_FOODS.length}.`);
+      // Idempotente: insere apenas os alimentos cujo nome ainda não existe,
+      // para que novos itens do catálogo cheguem a bases já populadas.
+      const existing = await this.prisma.foodLibrary.findMany({
+        select: { name: true },
+      });
+      const have = new Set(existing.map((f) => f.name));
+      const missing = COMMON_FOODS.filter((f) => !have.has(f.name));
+      if (missing.length === 0) return;
+      await this.prisma.foodLibrary.createMany({ data: missing });
+      this.logger.log(
+        `Catálogo de alimentos: +${missing.length} novos (total ${have.size + missing.length}).`,
+      );
     } catch (err) {
       this.logger.error(`Falha ao semear alimentos: ${String(err)}`);
     }
