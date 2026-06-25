@@ -5,6 +5,7 @@ import { api } from '@/lib/api';
 import { qk } from '@/lib/query-keys';
 import type {
   PlanExercise,
+  WeekScheduleDay,
   WorkoutDay,
   WorkoutPlan,
   WorkoutTemplateSummary,
@@ -16,6 +17,14 @@ export function useWorkoutTemplates() {
     queryKey: ['plan-templates'],
     queryFn: () => api.get<WorkoutTemplateSummary[]>('/plan-templates'),
     staleTime: 1000 * 60 * 60,
+  });
+}
+
+/** Agenda semanal: dias atribuídos a dias da semana. */
+export function useWorkoutWeek() {
+  return useQuery({
+    queryKey: ['workout-week'],
+    queryFn: () => api.get<WeekScheduleDay[]>('/workout-week'),
   });
 }
 
@@ -64,7 +73,10 @@ export function usePlanMutations(planId?: string) {
     updateDay: useMutation({
       mutationFn: ({ id, body }: { id: string; body: Partial<WorkoutDay> }) =>
         api.patch<WorkoutDay>(`/days/${id}`, body),
-      onSuccess: invalidatePlan,
+      onSuccess: () => {
+        invalidatePlan();
+        void qc.invalidateQueries({ queryKey: ['workout-week'] });
+      },
     }),
     deleteDay: useMutation({
       mutationFn: (id: string) => api.del(`/days/${id}`),

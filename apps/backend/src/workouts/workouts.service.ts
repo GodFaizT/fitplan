@@ -105,6 +105,10 @@ export class WorkoutsService {
     });
     const bySlug = new Map(lib.map((l) => [l.slug, l]));
 
+    // Pré-agenda os dias na semana (3 dias → Seg/Qua/Sex; resto → seguidos).
+    const order =
+      tpl.daysPerWeek === 3 ? [1, 3, 5] : [1, 2, 3, 4, 5, 6, 0];
+
     return this.prisma.workoutPlan.create({
       data: {
         ownerId: userId,
@@ -114,6 +118,7 @@ export class WorkoutsService {
             label: d.label,
             title: d.title,
             position: di,
+            scheduledDays: order[di] !== undefined ? [order[di]] : [],
             exercises: {
               create: d.exercises.map((e, ei) => {
                 const l = bySlug.get(e.slug);
@@ -155,6 +160,32 @@ export class WorkoutsService {
     await this.ensureOwner(userId, planId);
     await this.prisma.workoutPlan.delete({ where: { id: planId } });
     return { ok: true };
+  }
+
+  // ---- agenda semanal -----------------------------------------------------
+
+  /** Dias dos planos do utilizador que estão atribuídos a dias da semana. */
+  async weekSchedule(userId: string) {
+    const days = await this.prisma.workoutDay.findMany({
+      where: {
+        plan: { ownerId: userId },
+        NOT: { scheduledDays: { isEmpty: true } },
+      },
+      orderBy: { plan: { updatedAt: 'desc' } },
+      include: {
+        plan: { select: { id: true, name: true } },
+        _count: { select: { exercises: true } },
+      },
+    });
+    return days.map((d) => ({
+      id: d.id,
+      label: d.label,
+      title: d.title,
+      scheduledDays: d.scheduledDays,
+      planId: d.planId,
+      planName: d.plan.name,
+      exerciseCount: d._count.exercises,
+    }));
   }
 
   // ---- dias ---------------------------------------------------------------

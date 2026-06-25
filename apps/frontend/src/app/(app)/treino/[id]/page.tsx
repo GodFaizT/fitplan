@@ -25,6 +25,7 @@ import { EmptyState, Skeleton } from '@/components/ui/misc';
 import { Modal } from '@/components/ui/modal';
 import { usePlan, usePlanMutations } from '@/hooks/use-plans';
 import { useAuthStore } from '@/lib/auth-store';
+import { WEEK_ORDER, WEEKDAY_SHORT } from '@/lib/format';
 import { muscleLabel } from '@/lib/labels';
 import { toast } from '@/lib/toast';
 import type { PlanExercise, WorkoutDay } from '@/lib/types';
@@ -184,6 +185,21 @@ function PlanDetailInner() {
             ) : null}
           </div>
 
+          {mine ? (
+            <DaySchedule
+              day={selectedDay}
+              onToggle={(wd) => {
+                const set = new Set(selectedDay.scheduledDays ?? []);
+                if (set.has(wd)) set.delete(wd);
+                else set.add(wd);
+                mut.updateDay.mutate({
+                  id: selectedDay.id,
+                  body: { scheduledDays: [...set].sort((a, b) => a - b) },
+                });
+              }}
+            />
+          ) : null}
+
           {selectedDay.exercises.length === 0 ? (
             <EmptyState
               title="Dia sem exercícios"
@@ -261,6 +277,43 @@ function PlanDetailInner() {
         danger
         busy={mut.deletePlan.isPending}
       />
+    </div>
+  );
+}
+
+function DaySchedule({
+  day,
+  onToggle,
+}: {
+  day: WorkoutDay;
+  onToggle: (weekday: number) => void;
+}) {
+  const set = new Set(day.scheduledDays ?? []);
+  return (
+    <div className="rounded-xl border border-line bg-surface p-3">
+      <p className="mb-2 text-[12px] text-text-muted">
+        Dias da semana deste treino
+      </p>
+      <div className="flex gap-1.5">
+        {WEEK_ORDER.map((wd) => {
+          const on = set.has(wd);
+          return (
+            <button
+              key={wd}
+              onClick={() => onToggle(wd)}
+              aria-pressed={on}
+              aria-label={WEEKDAY_SHORT[wd]}
+              className={`h-9 flex-1 rounded-lg text-[12px] font-medium transition ${
+                on
+                  ? 'bg-accent text-accent-text'
+                  : 'bg-surface-2 text-text-muted hover:text-text'
+              }`}
+            >
+              {WEEKDAY_SHORT[wd]}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

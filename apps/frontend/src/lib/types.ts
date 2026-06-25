@@ -224,7 +224,19 @@ export interface WorkoutDay {
   label: string;
   title: string | null;
   position: number;
+  scheduledDays: number[]; // 0=Dom … 6=Sáb
   exercises: PlanExercise[];
+}
+
+/** Dia de treino agendado para a semana (ecrã inicial). */
+export interface WeekScheduleDay {
+  id: string;
+  label: string;
+  title: string | null;
+  scheduledDays: number[];
+  planId: string;
+  planName: string;
+  exerciseCount: number;
 }
 
 export interface PlanMemberInfo {

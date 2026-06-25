@@ -161,13 +161,14 @@ model PlanMember {
 }
 
 model WorkoutDay {
-  id        String      @id @default(cuid())
-  planId    String
-  plan      WorkoutPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
-  label     String
-  title     String?
-  position  Int
-  exercises Exercise[]
+  id            String      @id @default(cuid())
+  planId        String
+  plan          WorkoutPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  label         String
+  title         String?
+  position      Int
+  scheduledDays Int[]       @default([]) // dias da semana (0=Dom … 6=Sáb)
+  exercises     Exercise[]
 
   @@index([planId])
 }

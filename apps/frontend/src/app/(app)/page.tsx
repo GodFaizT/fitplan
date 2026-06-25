@@ -7,38 +7,27 @@ import { CountUp } from '@/components/ui/count-up';
 import { ProgressBar } from '@/components/ui/progress-bar';
 import { Ring } from '@/components/ui/ring';
 import { useDailyLog } from '@/hooks/use-meals';
-import { usePlan, usePlans } from '@/hooks/use-plans';
+import { useWorkoutWeek } from '@/hooks/use-plans';
 import { useAuthStore } from '@/lib/auth-store';
-import { fmt, todayISO, weekdayIndex } from '@/lib/format';
-import { muscleLabel } from '@/lib/labels';
+import { fmt, todayISO, WEEK_ORDER, WEEKDAY_SHORT, weekdayIndex } from '@/lib/format';
 import { MACROS, type MacroMeta } from '@/lib/macros';
+import type { WeekScheduleDay } from '@/lib/types';
 import { sumMeals, targetsFromUser } from '@/lib/totals';
-
-const WEEKDAY_NAMES = [
-  'domingo',
-  'segunda',
-  'terça',
-  'quarta',
-  'quinta',
-  'sexta',
-  'sábado',
-];
 
 export default function DashboardPage() {
   const user = useAuthStore((s) => s.user);
   const today = todayISO();
   const log = useDailyLog(today);
-  const plans = usePlans();
-  const firstPlanId = plans.data?.[0]?.id ?? '';
-  const plan = usePlan(firstPlanId);
+  const week = useWorkoutWeek();
 
   const targets = targetsFromUser(user);
   const totals = log.data ? sumMeals(log.data.meals) : null;
 
-  const weekday = WEEKDAY_NAMES[weekdayIndex(today)];
-  const todayDay = plan.data?.days?.find((d) =>
-    d.label.toLowerCase().startsWith(weekday),
-  );
+  const todayIdx = weekdayIndex(today);
+  const schedule = week.data ?? [];
+  const dayFor = (wd: number) =>
+    schedule.find((d) => d.scheduledDays.includes(wd)) ?? null;
+  const todayDay = dayFor(todayIdx);
 
   const firstName = user?.name?.split(' ')[0] ?? null;
   const consumed = totals?.calories ?? 0;
@@ -121,7 +110,7 @@ export default function DashboardPage() {
           </Link>
         </div>
         {todayDay ? (
-          <Link href={`/treino/${plan.data?.id}?dia=${todayDay.id}`}>
+          <Link href={`/treino/${todayDay.planId}?dia=${todayDay.id}`}>
             <Card className="lift cursor-pointer">
               <div className="flex items-center justify-between">
                 <div>
@@ -130,25 +119,63 @@ export default function DashboardPage() {
                     {todayDay.title ?? 'Treino'}
                   </p>
                   <p className="mt-0.5 text-sm text-text-muted">
-                    {todayDay.exercises.length} exercícios ·{' '}
-                    {[...new Set(todayDay.exercises.map((e) => muscleLabel(e.muscleGroup)))]
-                      .slice(0, 3)
-                      .join(', ')}
+                    {todayDay.exerciseCount} exercícios · {todayDay.planName}
                   </p>
                 </div>
                 <ArrowRight className="h-5 w-5 text-text-muted" />
               </div>
             </Card>
           </Link>
-        ) : (
+        ) : schedule.length === 0 ? (
           <Card className="text-sm text-text-muted">
-            Sem treino marcado para hoje.{' '}
+            Ainda não tens a semana organizada.{' '}
             <Link href="/treino" className="text-accent hover:underline">
-              Cria ou ajusta o teu plano
+              Marca os teus dias de treino
             </Link>
             .
           </Card>
+        ) : (
+          <Card className="text-sm text-text-muted">Hoje é dia de descanso. 🧘</Card>
         )}
+
+        {/* Agenda da semana */}
+        {schedule.length > 0 ? (
+          <div className="mt-3 grid grid-cols-7 gap-1.5">
+            {WEEK_ORDER.map((wd) => {
+              const d = dayFor(wd);
+              const isToday = wd === todayIdx;
+              const inner = (
+                <div
+                  className={`flex h-full flex-col items-center gap-1 rounded-xl border px-1 py-2 text-center transition ${
+                    isToday
+                      ? 'border-accent/60 bg-accent/10'
+                      : 'border-line bg-surface'
+                  }`}
+                >
+                  <span
+                    className={`text-[11px] ${isToday ? 'text-accent' : 'text-text-muted'}`}
+                  >
+                    {WEEKDAY_SHORT[wd]}
+                  </span>
+                  {d ? (
+                    <span className="line-clamp-2 text-[11px] font-medium leading-tight">
+                      {dayShort(d)}
+                    </span>
+                  ) : (
+                    <span className="text-[11px] text-text-muted">—</span>
+                  )}
+                </div>
+              );
+              return d ? (
+                <Link key={wd} href={`/treino/${d.planId}?dia=${d.id}`}>
+                  {inner}
+                </Link>
+              ) : (
+                <div key={wd}>{inner}</div>
+              );
+            })}
+          </div>
+        ) : null}
       </div>
 
       {/* Atalhos */}
@@ -158,6 +185,12 @@ export default function DashboardPage() {
       </div>
     </div>
   );
+}
+
+/** Rótulo curto para os chips da agenda (título sem o tipo entre parênteses). */
+function dayShort(d: WeekScheduleDay): string {
+  const base = d.title ?? d.label;
+  return base.split('(')[0].replace(/·.*/, '').trim();
 }
 
 function MacroLine({

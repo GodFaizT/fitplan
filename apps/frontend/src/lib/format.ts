@@ -51,6 +51,12 @@ export function weekdayIndex(iso: string): number {
   return new Date(`${iso}T00:00:00`).getDay();
 }
 
+/** Abreviaturas dos dias da semana, indexadas por getDay (0=Dom). */
+export const WEEKDAY_SHORT = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+
+/** Ordem da semana a começar à segunda: [Seg…Dom]. */
+export const WEEK_ORDER = [1, 2, 3, 4, 5, 6, 0];
+
 /** "23 jun" — data curta para eixos/legendas de gráficos. */
 export function chartDate(iso: string): string {
   const d = new Date(`${iso}T00:00:00`);

@@ -6,6 +6,7 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  Max,
   MaxLength,
   Min,
 } from 'class-validator';
@@ -27,6 +28,12 @@ export class CreateDayDto {
 export class UpdateDayDto {
   @IsOptional() @IsString() @MaxLength(40) label?: string;
   @IsOptional() @IsString() @MaxLength(80) title?: string;
+  @IsOptional()
+  @IsArray()
+  @IsInt({ each: true })
+  @Min(0, { each: true })
+  @Max(6, { each: true })
+  scheduledDays?: number[];
 }
 
 export class CreateExerciseDto {

@@ -38,6 +38,12 @@ export class WorkoutsController {
     return this.workouts.createFromTemplate(u.id, id);
   }
 
+  // agenda semanal
+  @Get('workout-week')
+  week(@CurrentUser() u: AuthUser) {
+    return this.workouts.weekSchedule(u.id);
+  }
+
   // planos
   @Get('plans')
   list(@CurrentUser() u: AuthUser) {
