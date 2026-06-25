@@ -14,6 +14,7 @@ import {
   UpdateExerciseDto,
   UpdatePlanDto,
 } from './dto/workout.dto';
+import { WORKOUT_TEMPLATES } from './templates.data';
 
 const fullPlanInclude = {
   owner: { select: { id: true, name: true, email: true } },
@@ -60,6 +61,83 @@ export class WorkoutsService {
   createPlan(userId: string, dto: CreatePlanDto) {
     return this.prisma.workoutPlan.create({
       data: { ownerId: userId, name: dto.name },
+      include: fullPlanInclude,
+    });
+  }
+
+  // ---- modelos de plano (prontos a usar) ---------------------------------
+
+  /** Lista os modelos disponíveis (resumo para pré-visualização). */
+  listTemplates() {
+    return WORKOUT_TEMPLATES.map((t) => ({
+      id: t.id,
+      name: t.name,
+      description: t.description,
+      daysPerWeek: t.daysPerWeek,
+      level: t.level,
+      focus: t.focus,
+      days: t.days.map((d) => ({
+        label: d.label,
+        title: d.title,
+        exercises: d.exercises.map((e) => ({
+          name: e.name,
+          sets: e.sets,
+          reps: e.reps,
+        })),
+      })),
+    }));
+  }
+
+  /**
+   * Cria um plano do utilizador a partir de um modelo, resolvendo cada
+   * exercício na biblioteca (imagens + instruções) pelo `slug`. Se um slug não
+   * existir, o exercício fica na mesma com nome/músculo definidos no modelo.
+   */
+  async createFromTemplate(userId: string, templateId: string) {
+    const tpl = WORKOUT_TEMPLATES.find((t) => t.id === templateId);
+    if (!tpl) throw new NotFoundException('Modelo não encontrado');
+
+    const slugs = [
+      ...new Set(tpl.days.flatMap((d) => d.exercises.map((e) => e.slug))),
+    ];
+    const lib = await this.prisma.exerciseLibrary.findMany({
+      where: { slug: { in: slugs } },
+    });
+    const bySlug = new Map(lib.map((l) => [l.slug, l]));
+
+    return this.prisma.workoutPlan.create({
+      data: {
+        ownerId: userId,
+        name: tpl.name,
+        days: {
+          create: tpl.days.map((d, di) => ({
+            label: d.label,
+            title: d.title,
+            position: di,
+            exercises: {
+              create: d.exercises.map((e, ei) => {
+                const l = bySlug.get(e.slug);
+                const instructions = l
+                  ? l.instructionsPt.length
+                    ? l.instructionsPt
+                    : l.instructions
+                  : [];
+                return {
+                  libraryId: l?.id ?? null,
+                  name: e.name,
+                  muscleGroup: e.muscle,
+                  sets: e.sets,
+                  reps: e.reps,
+                  restSeconds: e.rest,
+                  imageUrls: l?.imageUrls ?? [],
+                  instructions,
+                  position: ei,
+                };
+              }),
+            },
+          })),
+        },
+      },
       include: fullPlanInclude,
     });
   }

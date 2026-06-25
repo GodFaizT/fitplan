@@ -247,6 +247,23 @@ export interface WorkoutPlan {
   _count?: { days: number };
 }
 
+export interface TemplateDayPreview {
+  label: string;
+  title: string;
+  exercises: { name: string; sets: number; reps: string }[];
+}
+
+/** Modelo de plano pronto a usar (resumo). */
+export interface WorkoutTemplateSummary {
+  id: string;
+  name: string;
+  description: string;
+  daysPerWeek: number;
+  level: string;
+  focus: string;
+  days: TemplateDayPreview[];
+}
+
 export interface AuthResponse {
   accessToken: string;
   user: ApiUser;

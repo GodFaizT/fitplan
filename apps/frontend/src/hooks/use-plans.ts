@@ -3,7 +3,21 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { qk } from '@/lib/query-keys';
-import type { PlanExercise, WorkoutDay, WorkoutPlan } from '@/lib/types';
+import type {
+  PlanExercise,
+  WorkoutDay,
+  WorkoutPlan,
+  WorkoutTemplateSummary,
+} from '@/lib/types';
+
+/** Modelos de plano prontos a usar (3 e 5 dias). */
+export function useWorkoutTemplates() {
+  return useQuery({
+    queryKey: ['plan-templates'],
+    queryFn: () => api.get<WorkoutTemplateSummary[]>('/plan-templates'),
+    staleTime: 1000 * 60 * 60,
+  });
+}
 
 export function usePlans() {
   return useQuery({
@@ -88,6 +102,11 @@ export function usePlanMutations(planId?: string) {
     join: useMutation({
       mutationFn: (code: string) =>
         api.post<WorkoutPlan>('/plans/join', { code }),
+      onSuccess: () => qc.invalidateQueries({ queryKey: qk.plans() }),
+    }),
+    createFromTemplate: useMutation({
+      mutationFn: (templateId: string) =>
+        api.post<WorkoutPlan>(`/plan-templates/${templateId}/create`),
       onSuccess: () => qc.invalidateQueries({ queryKey: qk.plans() }),
     }),
   };

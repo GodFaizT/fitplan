@@ -27,6 +27,17 @@ import { WorkoutsService } from './workouts.service';
 export class WorkoutsController {
   constructor(private readonly workouts: WorkoutsService) {}
 
+  // modelos de plano (prontos)
+  @Get('plan-templates')
+  listTemplates() {
+    return this.workouts.listTemplates();
+  }
+
+  @Post('plan-templates/:id/create')
+  createFromTemplate(@CurrentUser() u: AuthUser, @Param('id') id: string) {
+    return this.workouts.createFromTemplate(u.id, id);
+  }
+
   // planos
   @Get('plans')
   list(@CurrentUser() u: AuthUser) {
