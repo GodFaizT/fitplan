@@ -203,6 +203,36 @@ export class MealsService {
     return out;
   }
 
+  /** Totais diários (calorias + macros + água) num intervalo, para tendências. */
+  async summary(userId: string, fromStr: string, toStr: string) {
+    const from = parseDate(fromStr);
+    const to = parseDate(toStr);
+    const logs = await this.prisma.dailyLog.findMany({
+      where: { userId, date: { gte: from, lte: to } },
+      orderBy: { date: 'asc' },
+      include: { meals: { include: { items: true } } },
+    });
+    return logs.map((log) => {
+      const totals = { calories: 0, protein: 0, carbs: 0, fat: 0 };
+      for (const meal of log.meals) {
+        for (const it of meal.items) {
+          totals.calories += it.calories;
+          totals.protein += it.protein;
+          totals.carbs += it.carbs;
+          totals.fat += it.fat;
+        }
+      }
+      return {
+        date: log.date.toISOString().slice(0, 10),
+        water: log.water,
+        calories: Math.round(totals.calories),
+        protein: Math.round(totals.protein),
+        carbs: Math.round(totals.carbs),
+        fat: Math.round(totals.fat),
+      };
+    });
+  }
+
   /** Define o nº de copos de água do dia. */
   async setWater(userId: string, dateStr: string, water: number) {
     await this.getLog(userId, dateStr); // garante que o dia existe

@@ -3,12 +3,28 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { qk } from '@/lib/query-keys';
-import type { DailyLog, FoodItem, Meal, RecentFood } from '@/lib/types';
+import type {
+  DailyLog,
+  FoodItem,
+  Meal,
+  NutritionDay,
+  RecentFood,
+} from '@/lib/types';
 
 export function useDailyLog(date: string) {
   return useQuery({
     queryKey: qk.meals(date),
     queryFn: () => api.get<DailyLog>(`/logs?date=${date}`),
+  });
+}
+
+/** Totais diários num intervalo (tendências de nutrição). */
+export function useNutritionSummary(from: string, to: string) {
+  return useQuery({
+    queryKey: qk.nutritionSummary(from, to),
+    queryFn: () =>
+      api.get<NutritionDay[]>(`/logs/summary?from=${from}&to=${to}`),
+    staleTime: 1000 * 60 * 5,
   });
 }
 

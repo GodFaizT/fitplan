@@ -1,10 +1,12 @@
 'use client';
 
 import {
+  BookmarkPlus,
   ChevronLeft,
   ChevronRight,
   CopyPlus,
   GlassWater,
+  LayoutList,
   Minus,
   Plus,
   Trash2,
@@ -15,11 +17,16 @@ import { AddFoodModal, type NewFoodItem } from '@/components/meals/add-food-moda
 import { Button } from '@/components/ui/button';
 import { Card, Eyebrow, SectionTitle } from '@/components/ui/card';
 import { Field, Input } from '@/components/ui/input';
-import { Skeleton } from '@/components/ui/misc';
+import { EmptyState, Skeleton } from '@/components/ui/misc';
 import { Modal } from '@/components/ui/modal';
 import { ProgressBar } from '@/components/ui/progress-bar';
 import { Ring } from '@/components/ui/ring';
 import { Segmented } from '@/components/ui/segmented';
+import {
+  type NewTemplateItem,
+  useMealTemplateMutations,
+  useMealTemplates,
+} from '@/hooks/use-meal-templates';
 import { useDailyLog, useMealMutations } from '@/hooks/use-meals';
 import { useAuthStore } from '@/lib/auth-store';
 import { foodIcon } from '@/lib/food-icon';
@@ -27,6 +34,8 @@ import { addDays, dateLabel, fmt, todayISO } from '@/lib/format';
 import { MEAL_TYPE_LABELS, MEAL_TYPES } from '@/lib/labels';
 import { MACROS, type MacroMeta } from '@/lib/macros';
 import { mealIcon } from '@/lib/meal-icon';
+import { toast } from '@/lib/toast';
+import type { Meal } from '@/lib/types';
 import { sumMeals, targetsFromUser } from '@/lib/totals';
 
 export default function MealsPage() {
@@ -37,6 +46,10 @@ export default function MealsPage() {
 
   const [addFoodFor, setAddFoodFor] = useState<string | null>(null);
   const [addMealOpen, setAddMealOpen] = useState(false);
+  const [saveTplFor, setSaveTplFor] = useState<Meal | null>(null);
+  const [tplModalOpen, setTplModalOpen] = useState(false);
+
+  const tpl = useMealTemplateMutations(date);
 
   const targets = targetsFromUser(user);
   const totals = log.data ? sumMeals(log.data.meals) : null;
@@ -131,13 +144,25 @@ export default function MealsPage() {
                       </p>
                     </div>
                   </div>
-                  <button
-                    onClick={() => m.deleteMeal.mutate(meal.id)}
-                    className="rounded-lg p-1.5 text-text-muted hover:bg-surface-2 hover:text-danger"
-                    aria-label="Remover refeição"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
+                  <div className="flex items-center gap-0.5">
+                    {meal.items.length > 0 ? (
+                      <button
+                        onClick={() => setSaveTplFor(meal)}
+                        className="rounded-lg p-1.5 text-text-muted hover:bg-surface-2 hover:text-accent"
+                        aria-label="Guardar como modelo"
+                        title="Guardar como modelo"
+                      >
+                        <BookmarkPlus className="h-4 w-4" />
+                      </button>
+                    ) : null}
+                    <button
+                      onClick={() => m.deleteMeal.mutate(meal.id)}
+                      className="rounded-lg p-1.5 text-text-muted hover:bg-surface-2 hover:text-danger"
+                      aria-label="Remover refeição"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
                 </div>
 
                 {meal.items.length > 0 ? (
@@ -202,6 +227,13 @@ export default function MealsPage() {
         <Button
           variant="secondary"
           className="sm:flex-1"
+          onClick={() => setTplModalOpen(true)}
+        >
+          <LayoutList className="h-4 w-4" /> Modelos
+        </Button>
+        <Button
+          variant="secondary"
+          className="sm:flex-1"
           onClick={() => setAddMealOpen(true)}
         >
           <Plus className="h-4 w-4" /> Adicionar refeição
@@ -217,6 +249,22 @@ export default function MealsPage() {
         open={addMealOpen}
         onClose={() => setAddMealOpen(false)}
         onAdd={(type, label) => m.addMeal.mutate({ type, label })}
+      />
+      <SaveTemplateModal
+        meal={saveTplFor}
+        onClose={() => setSaveTplFor(null)}
+        onSave={async (name, items) => {
+          await tpl.create.mutateAsync({ name, items });
+          toast.success('Modelo guardado');
+        }}
+        busy={tpl.create.isPending}
+      />
+      <TemplatesModal
+        open={tplModalOpen}
+        onClose={() => setTplModalOpen(false)}
+        onApply={(id) => tpl.apply.mutate({ id })}
+        onDelete={(id) => tpl.remove.mutate(id)}
+        applying={tpl.apply.isPending}
       />
     </div>
   );
@@ -348,6 +396,134 @@ function AddMealModal({
           Adicionar
         </Button>
       </div>
+    </Modal>
+  );
+}
+
+function SaveTemplateModal({
+  meal,
+  onClose,
+  onSave,
+  busy,
+}: {
+  meal: Meal | null;
+  onClose: () => void;
+  onSave: (name: string, items: NewTemplateItem[]) => Promise<void>;
+  busy: boolean;
+}) {
+  const [name, setName] = useState('');
+  const [initId, setInitId] = useState<string | null>(null);
+
+  // prefill com o nome da refeição quando abre
+  if (meal && meal.id !== initId) {
+    setInitId(meal.id);
+    setName(meal.label || MEAL_TYPE_LABELS[meal.type] || 'Refeição');
+  }
+
+  async function save() {
+    if (!meal || !name.trim()) return;
+    const items: NewTemplateItem[] = meal.items.map((it) => ({
+      name: it.name,
+      quantity: it.quantity,
+      unit: it.unit,
+      calories: it.calories,
+      protein: it.protein,
+      carbs: it.carbs,
+      fat: it.fat,
+    }));
+    await onSave(name.trim(), items);
+    onClose();
+  }
+
+  return (
+    <Modal open={!!meal} onClose={onClose} title="Guardar como modelo">
+      <div className="flex flex-col gap-4">
+        <p className="text-sm text-text-muted">
+          Guarda os {meal?.items.length ?? 0} alimentos desta refeição para
+          voltar a adicionar noutro dia com um toque.
+        </p>
+        <Field label="Nome do modelo">
+          <Input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="ex: Pequeno-almoço de treino"
+            autoFocus
+          />
+        </Field>
+        <Button onClick={save} disabled={busy || !name.trim()}>
+          {busy ? 'A guardar…' : 'Guardar modelo'}
+        </Button>
+      </div>
+    </Modal>
+  );
+}
+
+function TemplatesModal({
+  open,
+  onClose,
+  onApply,
+  onDelete,
+  applying,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onApply: (id: string) => void;
+  onDelete: (id: string) => void;
+  applying: boolean;
+}) {
+  const templates = useMealTemplates();
+  const list = templates.data ?? [];
+
+  return (
+    <Modal open={open} onClose={onClose} title="Refeições guardadas">
+      {templates.isLoading ? (
+        <Skeleton className="h-24 w-full" />
+      ) : list.length === 0 ? (
+        <EmptyState
+          icon={BookmarkPlus}
+          title="Ainda não tens modelos"
+          description="Carrega no marcador de uma refeição para a guardar como modelo."
+        />
+      ) : (
+        <div className="flex flex-col gap-2">
+          {list.map((t) => {
+            const kcal = t.items.reduce((n, it) => n + it.calories, 0);
+            return (
+              <div
+                key={t.id}
+                className="flex items-center justify-between gap-2 rounded-xl border border-line px-3 py-2.5"
+              >
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium">{t.name}</p>
+                  <p className="text-[12px] text-text-muted">
+                    {t.items.length} alimentos · {fmt(kcal)} kcal
+                  </p>
+                </div>
+                <div className="flex shrink-0 items-center gap-1">
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    disabled={applying}
+                    onClick={() => {
+                      onApply(t.id);
+                      onClose();
+                    }}
+                  >
+                    <Plus className="h-3.5 w-3.5" /> Adicionar
+                  </Button>
+                  <button
+                    onClick={() => onDelete(t.id)}
+                    className="rounded p-1.5 text-text-muted hover:text-danger"
+                    aria-label="Remover modelo"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </Modal>
   );
 }

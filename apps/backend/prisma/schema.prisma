@@ -46,6 +46,9 @@ model User {
   savedFoods      SavedFood[]
   dailyLogs       DailyLog[]
   weightEntries   WeightEntry[]
+  measurements    BodyMeasurement[]
+  workoutSessions WorkoutSession[]
+  mealTemplates   MealTemplate[]
   planMemberships PlanMember[]
   ownedPlans      WorkoutPlan[] @relation("owner")
   refreshTokens   RefreshToken[]
@@ -231,4 +234,79 @@ model WeightEntry {
 
   @@unique([userId, date])
   @@index([userId])
+}
+
+// Medida corporal (cintura, peito, braço…). Um registo por (utilizador, data, tipo).
+model BodyMeasurement {
+  id     String   @id @default(cuid())
+  userId String
+  user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date   DateTime @db.Date
+  type   String // waist | chest | arm | hip | thigh | shoulders | calf | neck
+  value  Float // em cm
+
+  @@unique([userId, date, type])
+  @@index([userId])
+}
+
+// Sessão de treino concluída (histórico). As séries ficam em SetLog.
+model WorkoutSession {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planId      String? // referência ao plano (pode já não existir)
+  planName    String?
+  dayLabel    String?
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+  durationSec Int       @default(0)
+  notes       String?
+  sets        SetLog[]
+  createdAt   DateTime  @default(now())
+
+  @@index([userId])
+}
+
+// Série registada numa sessão de treino.
+model SetLog {
+  id           String         @id @default(cuid())
+  sessionId    String
+  session      WorkoutSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  exerciseName String
+  muscleGroup  String?
+  setNumber    Int
+  weight       Float?
+  reps         Int?
+  position     Int            @default(0)
+
+  @@index([sessionId])
+  @@index([exerciseName])
+}
+
+// Refeição guardada como modelo, para re-adicionar rapidamente.
+model MealTemplate {
+  id        String             @id @default(cuid())
+  userId    String
+  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  items     MealTemplateItem[]
+  createdAt DateTime           @default(now())
+
+  @@index([userId])
+}
+
+model MealTemplateItem {
+  id         String       @id @default(cuid())
+  templateId String
+  template   MealTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  name       String
+  quantity   Float
+  unit       String
+  calories   Float
+  protein    Float
+  carbs      Float
+  fat        Float
+  position   Int          @default(0)
+
+  @@index([templateId])
 }

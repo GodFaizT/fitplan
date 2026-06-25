@@ -62,6 +62,101 @@ export interface WeightEntry {
   weightKg: number;
 }
 
+export interface BodyMeasurement {
+  id: string;
+  userId: string;
+  date: string;
+  type: string;
+  value: number; // cm
+}
+
+export interface SetLog {
+  id: string;
+  sessionId: string;
+  exerciseName: string;
+  muscleGroup: string | null;
+  setNumber: number;
+  weight: number | null;
+  reps: number | null;
+  position: number;
+}
+
+export interface WorkoutSession {
+  id: string;
+  userId: string;
+  planId: string | null;
+  planName: string | null;
+  dayLabel: string | null;
+  startedAt: string;
+  completedAt: string | null;
+  durationSec: number;
+  notes: string | null;
+  createdAt: string;
+  sets: SetLog[];
+  volume: number; // calculado pelo backend
+  totalSets: number;
+}
+
+/** Série a gravar (sem ids) ao concluir uma sessão. */
+export interface NewSetLog {
+  exerciseName: string;
+  muscleGroup?: string;
+  setNumber: number;
+  weight?: number;
+  reps?: number;
+}
+
+export interface PersonalRecord {
+  exerciseName: string;
+  weight: number;
+  reps: number;
+  e1rm: number;
+}
+
+export interface SessionStats {
+  total: number;
+  thisWeek: number;
+  prs: PersonalRecord[];
+}
+
+export interface ProgressionPoint {
+  date: string;
+  maxWeight: number;
+  e1rm: number;
+  volume: number;
+}
+
+export interface MealTemplateItem {
+  id: string;
+  templateId: string;
+  name: string;
+  quantity: number;
+  unit: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  position: number;
+}
+
+export interface MealTemplate {
+  id: string;
+  userId: string;
+  name: string;
+  createdAt: string;
+  items: MealTemplateItem[];
+}
+
+/** Totais de um dia (endpoint de tendências de nutrição). */
+export interface NutritionDay {
+  date: string;
+  water: number;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+}
+
 export interface SavedFood {
   id: string;
   name: string;

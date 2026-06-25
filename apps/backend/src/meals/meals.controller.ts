@@ -39,6 +39,19 @@ export class MealsController {
     return this.meals.recentFoods(user.id);
   }
 
+  /** GET /logs/summary?from=&to= — totais diários (tendências de nutrição). */
+  @Get('logs/summary')
+  summary(
+    @CurrentUser() user: AuthUser,
+    @Query('from') from?: string,
+    @Query('to') to?: string,
+  ) {
+    if (!from || !to) {
+      throw new BadRequestException('Parâmetros "from" e "to" obrigatórios');
+    }
+    return this.meals.summary(user.id, from, to);
+  }
+
   /** POST /logs/:date/copy — copia as refeições de outro dia (body: { from }). */
   @Post('logs/:date/copy')
   copyDay(

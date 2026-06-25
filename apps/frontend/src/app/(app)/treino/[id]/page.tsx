@@ -192,6 +192,9 @@ function PlanDetailInner() {
             <TrainingSession
               key={selectedDay.id}
               exercises={selectedDay.exercises}
+              planId={p.id}
+              planName={p.name}
+              dayLabel={selectedDay.title ?? selectedDay.label}
             />
           ) : (
             selectedDay.exercises.map((ex, i) => (

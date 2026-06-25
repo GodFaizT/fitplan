@@ -9,9 +9,12 @@ import { validateEnv } from './config/env.validation';
 import { ExercisesModule } from './exercises/exercises.module';
 import { FoodsModule } from './foods/foods.module';
 import { MealsModule } from './meals/meals.module';
+import { MealTemplatesModule } from './meal-templates/meal-templates.module';
+import { MeasurementsModule } from './measurements/measurements.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { SeedModule } from './seed/seed.module';
+import { SessionsModule } from './sessions/sessions.module';
 import { UsersModule } from './users/users.module';
 import { WeightsModule } from './weights/weights.module';
 import { WorkoutsModule } from './workouts/workouts.module';
@@ -30,9 +33,12 @@ import { WorkoutsModule } from './workouts/workouts.module';
     UsersModule,
     FoodsModule,
     MealsModule,
+    MealTemplatesModule,
     ExercisesModule,
     WorkoutsModule,
     WeightsModule,
+    MeasurementsModule,
+    SessionsModule,
     NotificationsModule,
     SeedModule,
   ],

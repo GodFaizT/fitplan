@@ -51,6 +51,29 @@ export const MEAL_TYPES = [
   'outro',
 ] as const;
 
+/** Medidas corporais (tipo canónico → rótulo PT). */
+export const MEASUREMENT_LABELS: Record<string, string> = {
+  waist: 'Cintura',
+  chest: 'Peito',
+  arm: 'Braço',
+  hip: 'Anca',
+  thigh: 'Coxa',
+  shoulders: 'Ombros',
+  calf: 'Gémeo',
+  neck: 'Pescoço',
+};
+
+export const MEASUREMENT_TYPES = [
+  'waist',
+  'chest',
+  'arm',
+  'hip',
+  'thigh',
+  'shoulders',
+  'calf',
+  'neck',
+] as const;
+
 /** Tradução simples de grupos musculares (Free Exercise DB → PT). PROJECT.md 6.4. */
 export const MUSCLE_LABELS: Record<string, string> = {
   chest: 'Peito',

@@ -9,4 +9,11 @@ export const qk = {
   exercises: (q: string) => ['exercises', q] as const,
   facets: () => ['exercise-facets'] as const,
   weights: () => ['weights'] as const,
+  measurements: () => ['measurements'] as const,
+  sessions: () => ['sessions'] as const,
+  sessionStats: () => ['session-stats'] as const,
+  progression: (name: string) => ['progression', name] as const,
+  mealTemplates: () => ['meal-templates'] as const,
+  nutritionSummary: (from: string, to: string) =>
+    ['nutrition-summary', from, to] as const,
 };

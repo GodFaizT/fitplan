@@ -1,31 +1,70 @@
 'use client';
 
-import { Check, ChevronLeft, ChevronRight, Timer, Trophy } from 'lucide-react';
+import { Check, ChevronLeft, ChevronRight, Flag, Timer, Trophy } from 'lucide-react';
+import Link from 'next/link';
 import { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, Eyebrow } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { YouTubeEmbed } from '@/components/workout/youtube-embed';
+import { useSessionMutations } from '@/hooks/use-sessions';
 import { muscleLabel } from '@/lib/labels';
-import type { PlanExercise } from '@/lib/types';
+import { toast } from '@/lib/toast';
+import type { NewSetLog, PlanExercise } from '@/lib/types';
 import { RestTimer } from './rest-timer';
 
+interface SetEntry {
+  done: boolean;
+  weight: string;
+  reps: string;
+}
+
+/** Primeiro inteiro de uma string de reps ("8-12" → "8"). */
+function firstReps(reps: string): string {
+  const m = reps.match(/\d+/);
+  return m ? m[0] : '';
+}
+
+function defaultEntries(ex: PlanExercise): SetEntry[] {
+  const sets = Math.max(ex.sets, 1);
+  return Array.from({ length: sets }, () => ({
+    done: false,
+    weight: ex.weight != null ? String(ex.weight) : '',
+    reps: firstReps(ex.reps),
+  }));
+}
+
 /** Sessão de treino guiada: um exercício de cada vez, com séries e descanso. */
-export function TrainingSession({ exercises }: { exercises: PlanExercise[] }) {
+export function TrainingSession({
+  exercises,
+  planId,
+  planName,
+  dayLabel,
+}: {
+  exercises: PlanExercise[];
+  planId?: string;
+  planName?: string;
+  dayLabel?: string;
+}) {
   const [current, setCurrent] = useState(0);
-  const [done, setDone] = useState<Record<string, boolean[]>>({});
+  const [log, setLog] = useState<Record<string, SetEntry[]>>({});
   const [rest, setRest] = useState<{ key: number; seconds: number } | null>(null);
+  const [finishing, setFinishing] = useState(false);
+  const [saved, setSaved] = useState(false);
   const restKey = useRef(0);
+  const [startedAt] = useState(() => Date.now());
+  const { create } = useSessionMutations();
 
   if (exercises.length === 0) return null;
 
   const ex = exercises[current];
-  const sets = Math.max(ex.sets, 1);
-  const exDone = done[ex.id] ?? Array<boolean>(sets).fill(false);
-  const completedSets = exDone.filter(Boolean).length;
+  const entries = log[ex.id] ?? defaultEntries(ex);
+  const completedSets = entries.filter((e) => e.done).length;
+  const sets = entries.length;
 
   const overallSets = exercises.reduce((n, e) => n + Math.max(e.sets, 1), 0);
   const overallDone = exercises.reduce(
-    (n, e) => n + (done[e.id]?.filter(Boolean).length ?? 0),
+    (n, e) => n + (log[e.id]?.filter((s) => s.done).length ?? 0),
     0,
   );
   const allDone = overallDone >= overallSets;
@@ -35,21 +74,107 @@ export function TrainingSession({ exercises }: { exercises: PlanExercise[] }) {
     setRest({ key: restKey.current, seconds });
   }
 
+  function updateEntry(j: number, patch: Partial<SetEntry>) {
+    const arr = (log[ex.id] ?? defaultEntries(ex)).map((e, i) =>
+      i === j ? { ...e, ...patch } : e,
+    );
+    setLog({ ...log, [ex.id]: arr });
+  }
+
   function toggleSet(j: number) {
-    const arr = (done[ex.id] ?? Array<boolean>(sets).fill(false)).slice();
-    const wasDone = arr[j];
-    arr[j] = !arr[j];
-    setDone({ ...done, [ex.id]: arr });
-    // ao concluir uma série (não a última do exercício) → arranca o descanso
+    const wasDone = entries[j].done;
+    updateEntry(j, { done: !wasDone });
     if (!wasDone && j < sets - 1 && ex.restSeconds > 0) startRest(ex.restSeconds);
   }
 
-  if (allDone) {
+  function buildSets(): NewSetLog[] {
+    const out: NewSetLog[] = [];
+    for (const e of exercises) {
+      const es = log[e.id];
+      if (!es) continue;
+      es.forEach((s, j) => {
+        if (!s.done) return;
+        const weight = s.weight === '' ? undefined : Number(s.weight);
+        const reps = s.reps === '' ? undefined : Number(s.reps);
+        out.push({
+          exerciseName: e.name,
+          muscleGroup: e.muscleGroup ?? undefined,
+          setNumber: j + 1,
+          weight: Number.isFinite(weight) ? weight : undefined,
+          reps: Number.isFinite(reps) ? reps : undefined,
+        });
+      });
+    }
+    return out;
+  }
+
+  async function save() {
+    const setsPayload = buildSets();
+    if (setsPayload.length === 0) {
+      toast.error('Marca pelo menos uma série como feita');
+      return;
+    }
+    try {
+      await create.mutateAsync({
+        planId,
+        planName,
+        dayLabel,
+        durationSec: Math.round((Date.now() - startedAt) / 1000),
+        sets: setsPayload,
+      });
+      setSaved(true);
+      toast.success('Treino guardado 💪');
+    } catch {
+      toast.error('Não foi possível guardar o treino');
+    }
+  }
+
+  // ---- Ecrã final (guardar) ------------------------------------------------
+  if (saved) {
+    const total = buildSets().length;
     return (
       <Card className="flex flex-col items-center gap-3 py-12 text-center">
         <Trophy className="h-10 w-10 text-accent" />
-        <p className="text-lg font-medium">Treino concluído 💪</p>
-        <p className="text-sm text-text-muted">Boa! Todas as séries feitas.</p>
+        <p className="text-lg font-medium">Treino guardado 💪</p>
+        <p className="text-sm text-text-muted">
+          {total} séries registadas no teu histórico.
+        </p>
+        <Link href="/progresso?tab=treino">
+          <Button variant="secondary" size="sm">
+            Ver progresso
+          </Button>
+        </Link>
+      </Card>
+    );
+  }
+
+  if (finishing || allDone) {
+    const setsPayload = buildSets();
+    const volume = setsPayload.reduce(
+      (n, s) => n + (s.weight ?? 0) * (s.reps ?? 0),
+      0,
+    );
+    return (
+      <Card className="flex flex-col items-center gap-4 py-10 text-center">
+        <Trophy className="h-10 w-10 text-accent" />
+        <div>
+          <p className="text-lg font-medium">
+            {allDone ? 'Treino concluído 💪' : 'Terminar treino?'}
+          </p>
+          <p className="mt-1 text-sm text-text-muted">
+            {setsPayload.length} séries · {Math.round(volume).toLocaleString('pt-PT')} kg de volume
+          </p>
+        </div>
+        <div className="flex w-full max-w-xs flex-col gap-2">
+          <Button onClick={save} disabled={create.isPending}>
+            {create.isPending ? 'A guardar…' : 'Guardar treino'}
+          </Button>
+          {!allDone ? (
+            <Button variant="ghost" size="sm" onClick={() => setFinishing(false)}>
+              Continuar treino
+            </Button>
+          ) : null}
+        </div>
       </Card>
     );
   }
@@ -101,26 +226,49 @@ export function TrainingSession({ exercises }: { exercises: PlanExercise[] }) {
           </div>
         ) : null}
 
-        {/* Séries — tocar para marcar; arranca o descanso */}
+        {/* Séries — marca como feita e regista carga × reps */}
         <div>
-          <p className="mb-2 text-[12px] uppercase tracking-[0.04em] text-text-muted">
-            Séries · {completedSets}/{sets}
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {Array.from({ length: sets }).map((_, j) => (
-              <button
-                key={j}
-                onClick={() => toggleSet(j)}
-                aria-label={`Série ${j + 1}${exDone[j] ? ' (feita)' : ''}`}
-                aria-pressed={exDone[j]}
-                className={`flex h-11 w-11 items-center justify-center rounded-xl border text-sm transition ${
-                  exDone[j]
-                    ? 'border-accent bg-accent text-accent-text'
-                    : 'border-line bg-surface-2 text-text-muted hover:border-accent/50'
-                }`}
-              >
-                {exDone[j] ? <Check className="h-5 w-5" /> : j + 1}
-              </button>
+          <div className="mb-2 flex items-center justify-between text-[12px] uppercase tracking-[0.04em] text-text-muted">
+            <span>Séries · {completedSets}/{sets}</span>
+            <span className="flex gap-6 pr-1 normal-case tracking-normal">
+              <span>kg</span>
+              <span>reps</span>
+            </span>
+          </div>
+          <div className="flex flex-col gap-2">
+            {entries.map((e, j) => (
+              <div key={j} className="flex items-center gap-2">
+                <button
+                  onClick={() => toggleSet(j)}
+                  aria-label={`Série ${j + 1}${e.done ? ' (feita)' : ''}`}
+                  aria-pressed={e.done}
+                  className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border text-sm transition ${
+                    e.done
+                      ? 'border-accent bg-accent text-accent-text'
+                      : 'border-line bg-surface-2 text-text-muted hover:border-accent/50'
+                  }`}
+                >
+                  {e.done ? <Check className="h-5 w-5" /> : j + 1}
+                </button>
+                <Input
+                  type="number"
+                  inputMode="decimal"
+                  value={e.weight}
+                  onChange={(ev) => updateEntry(j, { weight: ev.target.value })}
+                  className="stat h-11 flex-1 text-center"
+                  aria-label={`Carga da série ${j + 1} (kg)`}
+                  placeholder="—"
+                />
+                <Input
+                  type="number"
+                  inputMode="numeric"
+                  value={e.reps}
+                  onChange={(ev) => updateEntry(j, { reps: ev.target.value })}
+                  className="stat h-11 flex-1 text-center"
+                  aria-label={`Reps da série ${j + 1}`}
+                  placeholder="—"
+                />
+              </div>
             ))}
           </div>
         </div>
@@ -153,6 +301,14 @@ export function TrainingSession({ exercises }: { exercises: PlanExercise[] }) {
           Seguinte <ChevronRight className="h-4 w-4" />
         </Button>
       </div>
+
+      <button
+        onClick={() => setFinishing(true)}
+        disabled={overallDone === 0}
+        className="inline-flex items-center justify-center gap-1.5 self-center text-sm text-text-muted transition hover:text-text disabled:opacity-40"
+      >
+        <Flag className="h-4 w-4" /> Terminar e guardar treino
+      </button>
 
       {rest ? (
         <RestTimer
