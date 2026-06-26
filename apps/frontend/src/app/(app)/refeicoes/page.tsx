@@ -202,7 +202,7 @@ export default function MealsPage() {
 
                 <button
                   onClick={() => setAddFoodFor(meal.id)}
-                  className="mt-3 flex items-center gap-1.5 text-sm text-accent hover:underline"
+                  className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-line py-2.5 text-sm text-text-muted transition hover:border-accent/50 hover:text-accent"
                 >
                   <Plus className="h-4 w-4" /> Adicionar alimento
                 </button>

@@ -110,9 +110,12 @@ export default function WorkoutsPage() {
             const mine = plan.ownerId === user?.id;
             return (
               <Link key={plan.id} href={`/treino/${plan.id}`}>
-                <Card className="lift flex cursor-pointer items-center justify-between hover:border-accent/40">
-                  <div>
-                    <p className="font-medium">{plan.name}</p>
+                <Card className="lift flex cursor-pointer items-center gap-3 hover:border-accent/40">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent">
+                    <Dumbbell className="h-5 w-5" strokeWidth={1.8} />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-medium">{plan.name}</p>
                     <p className="text-[12px] text-text-muted">
                       {plan._count?.days ?? plan.days?.length ?? 0} dias
                       {!mine && plan.owner
@@ -121,7 +124,7 @@ export default function WorkoutsPage() {
                       {plan.isShared && mine ? ' · partilhado' : ''}
                     </p>
                   </div>
-                  <ChevronRight className="h-5 w-5 text-text-muted" />
+                  <ChevronRight className="h-5 w-5 shrink-0 text-text-muted" />
                 </Card>
               </Link>
             );
