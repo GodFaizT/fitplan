@@ -13,6 +13,7 @@ import { MealTemplatesModule } from './meal-templates/meal-templates.module';
 import { MeasurementsModule } from './measurements/measurements.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { ProgressPhotosModule } from './progress-photos/progress-photos.module';
 import { SeedModule } from './seed/seed.module';
 import { SessionsModule } from './sessions/sessions.module';
 import { UsersModule } from './users/users.module';
@@ -39,6 +40,7 @@ import { WorkoutsModule } from './workouts/workouts.module';
     WeightsModule,
     MeasurementsModule,
     SessionsModule,
+    ProgressPhotosModule,
     NotificationsModule,
     SeedModule,
   ],

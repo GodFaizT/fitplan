@@ -94,6 +94,30 @@ export async function apiFetch<T>(
   return (text ? JSON.parse(text) : undefined) as T;
 }
 
+/**
+ * Como `apiFetch`, mas devolve um Blob (ex: imagens autenticadas). Mantém o
+ * refresh transparente em caso de 401. Usar com URL.createObjectURL no cliente.
+ */
+export async function apiFetchBlob(path: string, retry = true): Promise<Blob> {
+  const token = useAuthStore.getState().accessToken;
+  const headers = new Headers();
+  if (token) headers.set('Authorization', `Bearer ${token}`);
+
+  const res = await fetch(`${API_URL}${path}`, {
+    headers,
+    credentials: 'include',
+  });
+
+  if (res.status === 401 && retry) {
+    const ok = await tryRefresh();
+    if (ok) return apiFetchBlob(path, false);
+    useAuthStore.getState().clear();
+    throw new ApiError(401, 'Sessão expirada. Inicia sessão novamente.');
+  }
+  if (!res.ok) throw new ApiError(res.status, `Erro ${res.status}`);
+  return res.blob();
+}
+
 /** Tenta restaurar a sessão no arranque (usa o refresh cookie httpOnly). */
 export async function bootstrapAuth(): Promise<void> {
   const ok = await tryRefresh();
@@ -113,6 +137,7 @@ export const api = {
       body: body !== undefined ? JSON.stringify(body) : undefined,
     }),
   del: <T>(path: string) => apiFetch<T>(path, { method: 'DELETE' }),
+  getBlob: (path: string) => apiFetchBlob(path),
 };
 
 // ---- auth (não usam apiFetch porque gerem o token diretamente) ------------

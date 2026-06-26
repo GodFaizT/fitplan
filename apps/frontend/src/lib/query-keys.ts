@@ -16,4 +16,5 @@ export const qk = {
   mealTemplates: () => ['meal-templates'] as const,
   nutritionSummary: (from: string, to: string) =>
     ['nutrition-summary', from, to] as const,
+  progressPhotos: () => ['progress-photos'] as const,
 };

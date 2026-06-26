@@ -25,6 +25,9 @@ async function bootstrap(): Promise<void> {
   );
 
   app.use(cookieParser());
+  // Uploads de fotos de progresso são enviados como data URL (base64) no corpo
+  // JSON — acima do limite por defeito do Express (100kb).
+  app.useBodyParser('json', { limit: '8mb' });
   app.setGlobalPrefix('api');
   app.useGlobalPipes(
     new ValidationPipe({

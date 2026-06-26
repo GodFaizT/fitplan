@@ -157,6 +157,16 @@ export interface NutritionDay {
   fat: number;
 }
 
+/** Metadados de uma foto de progresso (a imagem é servida à parte). */
+export interface ProgressPhoto {
+  id: string;
+  date: string;
+  note: string | null;
+  width: number | null;
+  height: number | null;
+  createdAt: string;
+}
+
 export interface SavedFood {
   id: string;
   name: string;

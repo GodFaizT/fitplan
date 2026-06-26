@@ -53,6 +53,7 @@ model User {
   ownedPlans      WorkoutPlan[] @relation("owner")
   refreshTokens   RefreshToken[]
   pushSubscriptions PushSubscription[]
+  progressPhotos  ProgressPhoto[]
 }
 
 model RefreshToken {
@@ -248,6 +249,23 @@ model BodyMeasurement {
 
   @@unique([userId, date, type])
   @@index([userId])
+}
+
+// Foto de progresso (antes/depois). A imagem é comprimida no cliente e guardada
+// como bytes na própria BD — sem armazenamento externo.
+model ProgressPhoto {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date      DateTime @db.Date
+  note      String?
+  mimeType  String
+  data      Bytes
+  width     Int?
+  height    Int?
+  createdAt DateTime @default(now())
+
+  @@index([userId, date])
 }
 
 // Sessão de treino concluída (histórico). As séries ficam em SetLog.
