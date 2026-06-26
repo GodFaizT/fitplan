@@ -6,7 +6,7 @@ import { MeasurementsTab } from '@/components/progress/measurements-tab';
 import { NutritionTab } from '@/components/progress/nutrition-tab';
 import { TrainingTab } from '@/components/progress/training-tab';
 import { WeightTab } from '@/components/progress/weight-tab';
-import { Eyebrow, SectionTitle } from '@/components/ui/card';
+import { PageHeader } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/misc';
 import { Segmented } from '@/components/ui/segmented';
 
@@ -36,10 +36,7 @@ function ProgressInner() {
 
   return (
     <div className="flex flex-col gap-6">
-      <header className="animate-fade-up">
-        <Eyebrow>Progresso</Eyebrow>
-        <SectionTitle className="mt-1">A tua evolução</SectionTitle>
-      </header>
+      <PageHeader eyebrow="Progresso" title="A tua evolução" />
 
       <Segmented options={TABS} value={tab} onChange={setTab} />
 

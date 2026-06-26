@@ -12,7 +12,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, Eyebrow, SectionTitle } from '@/components/ui/card';
+import { Card, PageHeader } from '@/components/ui/card';
 import { Field, Input } from '@/components/ui/input';
 import { EmptyState, Skeleton } from '@/components/ui/misc';
 import { Modal } from '@/components/ui/modal';
@@ -70,25 +70,25 @@ export default function WorkoutsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <header className="flex items-center justify-between">
-        <div>
-          <Eyebrow>Treino</Eyebrow>
-          <SectionTitle className="mt-1">Os meus planos</SectionTitle>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="secondary" size="sm" onClick={() => setJoinOpen(true)}>
-            <Users className="h-4 w-4" /> Aderir
-          </Button>
-          <Button size="sm" onClick={() => setCreateOpen(true)}>
-            <Plus className="h-4 w-4" /> Criar
-          </Button>
-        </div>
-      </header>
+      <PageHeader
+        eyebrow="Treino"
+        title="Os meus planos"
+        action={
+          <>
+            <Button variant="secondary" size="sm" onClick={() => setJoinOpen(true)}>
+              <Users className="h-4 w-4" /> Aderir
+            </Button>
+            <Button size="sm" onClick={() => setCreateOpen(true)}>
+              <Plus className="h-4 w-4" /> Criar
+            </Button>
+          </>
+        }
+      />
 
       {/* Planos prontos a usar */}
       <button
         onClick={() => setTemplatesOpen(true)}
-        className="group flex items-center gap-3 rounded-card border border-line bg-surface p-4 text-left transition hover:border-accent/40"
+        className="lift group flex animate-fade-up items-center gap-3 rounded-card border border-line bg-surface p-4 text-left [animation-delay:60ms] hover:border-accent/40"
       >
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent">
           <Sparkles className="h-5 w-5" />
@@ -110,7 +110,7 @@ export default function WorkoutsPage() {
             const mine = plan.ownerId === user?.id;
             return (
               <Link key={plan.id} href={`/treino/${plan.id}`}>
-                <Card className="flex items-center justify-between transition hover:border-accent/40">
+                <Card className="lift flex cursor-pointer items-center justify-between hover:border-accent/40">
                   <div>
                     <p className="font-medium">{plan.name}</p>
                     <p className="text-[12px] text-text-muted">

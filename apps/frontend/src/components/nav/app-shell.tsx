@@ -52,12 +52,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 key={href}
                 href={href}
                 className={cn(
-                  'flex items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] transition',
+                  'relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] transition',
                   active
                     ? 'bg-surface-2 text-text'
                     : 'text-text-muted hover:bg-surface-2 hover:text-text',
                 )}
               >
+                {active ? (
+                  <span
+                    aria-hidden
+                    className="accent-bar absolute left-1 top-1/2 h-5 w-1 -translate-y-1/2 rounded-pill"
+                  />
+                ) : null}
                 <Icon
                   className={cn('h-5 w-5', active && 'text-accent')}
                   strokeWidth={active ? 2.2 : 1.8}
@@ -71,12 +77,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <Link
           href="/definicoes"
           className={cn(
-            'flex items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] transition',
+            'relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] transition',
             settingsActive
               ? 'bg-surface-2 text-text'
               : 'text-text-muted hover:bg-surface-2 hover:text-text',
           )}
         >
+          {settingsActive ? (
+            <span
+              aria-hidden
+              className="accent-bar absolute left-1 top-1/2 h-5 w-1 -translate-y-1/2 rounded-pill"
+            />
+          ) : null}
           <Settings
             className={cn('h-5 w-5', settingsActive && 'text-accent')}
             strokeWidth={settingsActive ? 2.2 : 1.8}
@@ -114,8 +126,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <Link
                 key={href}
                 href={href}
-                className="flex flex-1 flex-col items-center gap-1 py-2.5"
+                aria-current={active ? 'page' : undefined}
+                className="relative flex flex-1 flex-col items-center gap-1 py-2.5 transition active:scale-[0.92]"
               >
+                {active ? (
+                  <span
+                    aria-hidden
+                    className="accent-bar absolute top-0 h-0.5 w-9 rounded-pill"
+                  />
+                ) : null}
                 <Icon
                   className={cn(
                     'h-[22px] w-[22px] transition',
@@ -125,8 +144,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 />
                 <span
                   className={cn(
-                    'text-[11px]',
-                    active ? 'text-text' : 'text-text-muted',
+                    'text-[11px] transition',
+                    active ? 'font-medium text-text' : 'text-text-muted',
                   )}
                 >
                   {label}

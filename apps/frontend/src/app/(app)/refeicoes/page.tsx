@@ -15,7 +15,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { AddFoodModal, type NewFoodItem } from '@/components/meals/add-food-modal';
 import { Button } from '@/components/ui/button';
-import { Card, Eyebrow, SectionTitle } from '@/components/ui/card';
+import { Card, PageHeader, SectionTitle } from '@/components/ui/card';
 import { Field, Input } from '@/components/ui/input';
 import { EmptyState, Skeleton } from '@/components/ui/misc';
 import { Modal } from '@/components/ui/modal';
@@ -63,25 +63,25 @@ export default function MealsPage() {
   return (
     <div className="flex flex-col gap-6">
       {/* Navegação de data */}
-      <header className="flex items-center justify-between">
-        <div>
-          <Eyebrow>Refeições</Eyebrow>
-          <SectionTitle className="mt-1">{dateLabel(date)}</SectionTitle>
-        </div>
-        <div className="flex items-center gap-1">
-          <Button variant="secondary" size="icon" onClick={() => setDate(addDays(date, -1))}>
-            <ChevronLeft className="h-5 w-5" />
-          </Button>
-          {date !== todayISO() ? (
-            <Button variant="ghost" size="sm" onClick={() => setDate(todayISO())}>
-              Hoje
+      <PageHeader
+        eyebrow="Refeições"
+        title={dateLabel(date)}
+        action={
+          <>
+            <Button variant="secondary" size="icon" onClick={() => setDate(addDays(date, -1))}>
+              <ChevronLeft className="h-5 w-5" />
             </Button>
-          ) : null}
-          <Button variant="secondary" size="icon" onClick={() => setDate(addDays(date, 1))}>
-            <ChevronRight className="h-5 w-5" />
-          </Button>
-        </div>
-      </header>
+            {date !== todayISO() ? (
+              <Button variant="ghost" size="sm" onClick={() => setDate(todayISO())}>
+                Hoje
+              </Button>
+            ) : null}
+            <Button variant="secondary" size="icon" onClick={() => setDate(addDays(date, 1))}>
+              <ChevronRight className="h-5 w-5" />
+            </Button>
+          </>
+        }
+      />
 
       {/* Resumo do dia */}
       {!targets ? (

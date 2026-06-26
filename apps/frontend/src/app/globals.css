@@ -73,6 +73,12 @@
     background-image: var(--surface-elevated);
     box-shadow: var(--card-hairline), var(--card-shadow);
   }
+  /* barra-assinatura: preenchimento lima + brilho subtil. Usada no tick dos
+     cabeçalhos e no indicador de página ativa da navegação. */
+  .accent-bar {
+    background-color: var(--accent);
+    box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 55%, transparent);
+  }
   /* elevação subtil no hover, consistente em cards/links interativos */
   .lift {
     transition:

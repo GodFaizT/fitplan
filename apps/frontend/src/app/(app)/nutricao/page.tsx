@@ -12,7 +12,7 @@ import dynamic from 'next/dynamic';
 import { useMemo, useState } from 'react';
 import { MacroCards } from '@/components/nutrition/macro-display';
 import { Button } from '@/components/ui/button';
-import { Card, Eyebrow, SectionTitle } from '@/components/ui/card';
+import { Card, PageHeader } from '@/components/ui/card';
 import { Field, Select } from '@/components/ui/input';
 import { NumberInput } from '@/components/ui/number-input';
 import { Skeleton } from '@/components/ui/misc';
@@ -94,16 +94,14 @@ export default function NutritionPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <header>
-        <Eyebrow>Nutrição</Eyebrow>
-        <SectionTitle className="mt-1">Calculadora</SectionTitle>
-        <p className="mt-1 text-sm text-text-muted">
-          Os teus dados → calorias e macros diários. Atualiza em tempo real.
-        </p>
-      </header>
+      <PageHeader
+        eyebrow="Nutrição"
+        title="Calculadora"
+        subtitle="Os teus dados, traduzidos em calorias e macros diários — atualiza em tempo real."
+      />
 
       {/* Resultados */}
-      <Card className="flex flex-col items-center gap-5 sm:flex-row sm:gap-8">
+      <Card className="flex animate-fade-up flex-col items-center gap-5 [animation-delay:60ms] sm:flex-row sm:gap-8">
         <MacroDonut result={result} />
         <div className="flex-1">
           <div className="flex items-baseline gap-2">

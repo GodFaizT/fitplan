@@ -9,7 +9,7 @@ import { AdminPanel } from '@/components/admin/admin-panel';
 import { ChangePassword } from '@/components/settings/change-password';
 import { NotificationsCard } from '@/components/settings/notifications';
 import { Button } from '@/components/ui/button';
-import { Card, Eyebrow, SectionTitle } from '@/components/ui/card';
+import { Card, PageHeader, SectionTitle } from '@/components/ui/card';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Field, Input } from '@/components/ui/input';
 import { Segmented } from '@/components/ui/segmented';
@@ -78,10 +78,7 @@ export default function SettingsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <header>
-        <Eyebrow>Definições</Eyebrow>
-        <SectionTitle className="mt-1">Perfil</SectionTitle>
-      </header>
+      <PageHeader eyebrow="Definições" title="Perfil" />
 
       {user?.role === 'admin' ? <AdminPanel /> : null}
 

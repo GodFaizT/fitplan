@@ -2,7 +2,7 @@
 
 import { ArrowRight, Dumbbell, Flame, Utensils } from 'lucide-react';
 import Link from 'next/link';
-import { Card, Eyebrow, SectionTitle } from '@/components/ui/card';
+import { Card, Eyebrow, PageHeader, SectionTitle } from '@/components/ui/card';
 import { CountUp } from '@/components/ui/count-up';
 import { ProgressBar } from '@/components/ui/progress-bar';
 import { Ring } from '@/components/ui/ring';
@@ -35,12 +35,10 @@ export default function DashboardPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <header className="animate-fade-up">
-        <Eyebrow>{user?.email}</Eyebrow>
-        <SectionTitle className="mt-1 text-2xl">
-          {firstName ? `Olá, ${firstName}` : 'Bom treino'}
-        </SectionTitle>
-      </header>
+      <PageHeader
+        eyebrow={user?.email ?? 'FitPlan'}
+        title={firstName ? `Olá, ${firstName}` : 'Bom treino'}
+      />
 
       {/* Resumo de calorias */}
       {targets ? (
