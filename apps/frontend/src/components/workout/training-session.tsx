@@ -1,13 +1,23 @@
 'use client';
 
-import { Check, ChevronLeft, ChevronRight, Flag, Timer, Trophy } from 'lucide-react';
+import {
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Flag,
+  Timer,
+  TrendingUp,
+  Trophy,
+} from 'lucide-react';
 import Link from 'next/link';
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, Eyebrow } from '@/components/ui/card';
 import { NumberInput } from '@/components/ui/number-input';
 import { YouTubeEmbed } from '@/components/workout/youtube-embed';
-import { useSessionMutations } from '@/hooks/use-sessions';
+import { useSessionMutations, useSessions } from '@/hooks/use-sessions';
+import { fmt } from '@/lib/format';
+import { lastPerformanceByExercise, suggestNextWeight } from '@/lib/insights';
 import { muscleLabel } from '@/lib/labels';
 import { toast } from '@/lib/toast';
 import type { NewSetLog, PlanExercise } from '@/lib/types';
@@ -54,6 +64,11 @@ export function TrainingSession({
   const restKey = useRef(0);
   const [startedAt] = useState(() => Date.now());
   const { create } = useSessionMutations();
+  const sessions = useSessions();
+  const lastByName = useMemo(
+    () => lastPerformanceByExercise(sessions.data ?? []),
+    [sessions.data],
+  );
 
   if (exercises.length === 0) return null;
 
@@ -61,6 +76,16 @@ export function TrainingSession({
   const entries = log[ex.id] ?? defaultEntries(ex);
   const completedSets = entries.filter((e) => e.done).length;
   const sets = entries.length;
+  const last = lastByName.get(ex.name);
+  const suggestion = suggestNextWeight(last, ex.reps);
+
+  /** Preenche a carga sugerida nas séries ainda por marcar. */
+  function applyWeight(w: number) {
+    const arr = (log[ex.id] ?? defaultEntries(ex)).map((e) =>
+      e.done ? e : { ...e, weight: w },
+    );
+    setLog({ ...log, [ex.id]: arr });
+  }
 
   const overallSets = exercises.reduce((n, e) => n + Math.max(e.sets, 1), 0);
   const overallDone = exercises.reduce(
@@ -205,6 +230,30 @@ export function TrainingSession({
             {ex.sets} × {ex.reps}
             {ex.weight ? ` · ${ex.weight} kg` : ''}
           </p>
+
+          {last ? (
+            <button
+              type="button"
+              onClick={() => suggestion && applyWeight(suggestion.weight)}
+              className="mt-2.5 flex w-full items-center gap-2 rounded-xl border border-line bg-surface-2/60 px-3 py-2 text-left text-[13px] transition hover:border-accent/50"
+            >
+              <TrendingUp className="h-4 w-4 shrink-0 text-accent" />
+              <span className="min-w-0 flex-1">
+                <span className="text-text-muted">Última vez: </span>
+                <span className="stat text-text">
+                  {last.weight != null ? `${fmt(last.weight, 1)} kg` : '—'}
+                  {last.reps != null ? ` × ${last.reps}` : ''}
+                </span>
+              </span>
+              {suggestion ? (
+                <span className="stat shrink-0 rounded-pill bg-accent/15 px-2 py-0.5 text-accent">
+                  {suggestion.increaseLoad
+                    ? `↑ ${fmt(suggestion.weight, 1)} kg`
+                    : 'mais reps'}
+                </span>
+              ) : null}
+            </button>
+          ) : null}
         </div>
 
         {ex.videoUrl ? (

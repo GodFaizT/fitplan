@@ -115,3 +115,70 @@ export function trainingHeatmap(
   }
   return cols;
 }
+
+// ---- Progressão (overload) -----------------------------------------------
+
+export interface LastPerformance {
+  weight: number | null;
+  reps: number | null;
+  date: string;
+}
+
+/**
+ * Última vez que cada exercício foi feito (a melhor série, por carga) — para
+ * sugerir a próxima progressão. Indexado pelo nome do exercício.
+ */
+export function lastPerformanceByExercise(
+  sessions: WorkoutSession[],
+): Map<string, LastPerformance> {
+  const sorted = [...sessions].sort((a, b) =>
+    (b.completedAt ?? b.createdAt).localeCompare(a.completedAt ?? a.createdAt),
+  );
+  const map = new Map<string, LastPerformance>();
+  for (const s of sorted) {
+    const date = (s.completedAt ?? s.createdAt).slice(0, 10);
+    const byEx = new Map<string, typeof s.sets>();
+    for (const set of s.sets) {
+      const arr = byEx.get(set.exerciseName) ?? [];
+      arr.push(set);
+      byEx.set(set.exerciseName, arr);
+    }
+    for (const [name, sets] of byEx) {
+      if (map.has(name)) continue; // já temos uma sessão mais recente
+      const top = sets.reduce((best, cur) =>
+        (cur.weight ?? 0) > (best.weight ?? 0) ? cur : best,
+      );
+      map.set(name, { weight: top.weight, reps: top.reps, date });
+    }
+  }
+  return map;
+}
+
+/** Topo do intervalo de reps ("8-12" → 12, "10" → 10), ou null. */
+function repRangeTop(reps: string): number | null {
+  const nums = reps.match(/\d+/g);
+  return nums ? Number(nums[nums.length - 1]) : null;
+}
+
+export interface Suggestion {
+  weight: number;
+  /** true = subir carga; false = manter carga e tentar mais reps. */
+  increaseLoad: boolean;
+}
+
+/**
+ * Sugere a próxima carga: se da última vez atingiste o topo do intervalo de
+ * reps, sobe a carga (passo conforme a magnitude); senão mantém e pede mais reps.
+ */
+export function suggestNextWeight(
+  last: LastPerformance | undefined,
+  repsSpec: string,
+): Suggestion | null {
+  if (!last || last.weight == null) return null;
+  const top = repRangeTop(repsSpec);
+  if (top != null && last.reps != null && last.reps >= top) {
+    const step = last.weight >= 40 ? 2.5 : 1.25;
+    return { weight: Math.round((last.weight + step) * 100) / 100, increaseLoad: true };
+  }
+  return { weight: last.weight, increaseLoad: false };
+}
