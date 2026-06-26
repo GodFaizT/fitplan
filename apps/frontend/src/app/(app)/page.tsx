@@ -2,6 +2,7 @@
 
 import { ArrowRight, Dumbbell, Flame, Utensils } from 'lucide-react';
 import Link from 'next/link';
+import { WeeklySummary } from '@/components/dashboard/weekly-summary';
 import { Card, Eyebrow, PageHeader, SectionTitle } from '@/components/ui/card';
 import { CountUp } from '@/components/ui/count-up';
 import { ProgressBar } from '@/components/ui/progress-bar';
@@ -98,6 +99,12 @@ export default function DashboardPage() {
           </Link>
         </Card>
       )}
+
+      {/* Esta semana */}
+      <div className="animate-fade-up [animation-delay:90ms]">
+        <SectionTitle className="mb-3">Esta semana</SectionTitle>
+        <WeeklySummary />
+      </div>
 
       {/* Treino de hoje */}
       <div className="animate-fade-up [animation-delay:120ms]">

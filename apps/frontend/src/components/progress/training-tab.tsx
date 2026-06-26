@@ -11,7 +11,9 @@ import {
   useSessionStats,
   useSessions,
 } from '@/hooks/use-sessions';
-import { chartDate, fmt } from '@/lib/format';
+import { chartDate, fmt, todayISO } from '@/lib/format';
+import { type HeatCell, trainingHeatmap } from '@/lib/insights';
+import type { WorkoutSession } from '@/lib/types';
 
 const MetricChart = dynamic(
   () => import('@/components/progress/weight-chart'),
@@ -68,6 +70,9 @@ export function TrainingTab() {
         </Card>
       </div>
 
+      {/* Consistência (heatmap dos últimos 3 meses) */}
+      <ConsistencyHeatmap sessions={list} />
+
       {/* Recordes pessoais */}
       {prs.length > 0 ? (
         <div>
@@ -109,7 +114,7 @@ export function TrainingTab() {
       ) : null}
 
       {/* Histórico */}
-      <div>
+      <div className="pt-2">
         <SectionTitle className="mb-2 text-[15px]">Histórico</SectionTitle>
         <div className="flex flex-col gap-2">
           {list.map((s) => (
@@ -136,5 +141,68 @@ export function TrainingTab() {
         </div>
       </div>
     </div>
+  );
+}
+
+/** Cor de uma célula do heatmap: cinza se 0, lima com intensidade crescente. */
+function cellColor(cell: HeatCell, today: string): string {
+  if (cell.date > today) return 'transparent';
+  if (cell.count <= 0) return 'var(--surface-2)';
+  const pct = [42, 70, 100][Math.min(cell.count - 1, 2)];
+  return `color-mix(in srgb, var(--accent) ${pct}%, var(--surface-2))`;
+}
+
+/** Mapa de calor da consistência de treino (últimas 12 semanas, estilo GitHub). */
+function ConsistencyHeatmap({ sessions }: { sessions: WorkoutSession[] }) {
+  const today = todayISO();
+  const cols = useMemo(() => trainingHeatmap(sessions, 12, today), [sessions, today]);
+  const dayLabels = ['S', 'T', 'Q', 'Q', 'S', 'S', 'D']; // 2ª→Dom
+
+  return (
+    <Card className="flex flex-col gap-3">
+      <SectionTitle className="text-[15px]">Consistência</SectionTitle>
+      <div className="flex gap-2">
+        <div className="flex flex-col gap-1 pt-0.5">
+          {dayLabels.map((d, i) => (
+            <span
+              key={i}
+              className="flex h-3.5 items-center text-[9px] leading-none text-text-muted"
+            >
+              {i % 2 === 0 ? d : ''}
+            </span>
+          ))}
+        </div>
+        <div className="no-scrollbar flex flex-1 justify-end gap-1 overflow-x-auto">
+          {cols.map((col, i) => (
+            <div key={i} className="flex flex-col gap-1">
+              {col.map((cell) => (
+                <span
+                  key={cell.date}
+                  title={`${chartDate(cell.date)} · ${cell.count} treino${cell.count === 1 ? '' : 's'}`}
+                  className="h-3.5 w-3.5 rounded-[3px]"
+                  style={{ background: cellColor(cell, today) }}
+                />
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="flex items-center justify-end gap-1.5 text-[11px] text-text-muted">
+        <span>Menos</span>
+        {['var(--surface-2)', 42, 70, 100].map((v, i) => (
+          <span
+            key={i}
+            className="h-3 w-3 rounded-[3px]"
+            style={{
+              background:
+                typeof v === 'string'
+                  ? v
+                  : `color-mix(in srgb, var(--accent) ${v}%, var(--surface-2))`,
+            }}
+          />
+        ))}
+        <span>Mais</span>
+      </div>
+    </Card>
   );
 }
