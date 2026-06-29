@@ -16,6 +16,7 @@ import { Card, PageHeader } from '@/components/ui/card';
 import { Field, Input } from '@/components/ui/input';
 import { EmptyState, Skeleton } from '@/components/ui/misc';
 import { Modal } from '@/components/ui/modal';
+import { CardioSection } from '@/components/workout/cardio-section';
 import {
   usePlanMutations,
   usePlans,
@@ -142,6 +143,8 @@ export default function WorkoutsPage() {
           }
         />
       )}
+
+      <CardioSection />
 
       <Modal open={createOpen} onClose={() => setCreateOpen(false)} title="Novo plano">
         <div className="flex flex-col gap-4">

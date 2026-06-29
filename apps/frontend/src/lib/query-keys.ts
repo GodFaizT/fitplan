@@ -12,6 +12,7 @@ export const qk = {
   measurements: () => ['measurements'] as const,
   sessions: () => ['sessions'] as const,
   sessionStats: () => ['session-stats'] as const,
+  cardio: () => ['cardio'] as const,
   progression: (name: string) => ['progression', name] as const,
   mealTemplates: () => ['meal-templates'] as const,
   nutritionSummary: (from: string, to: string) =>

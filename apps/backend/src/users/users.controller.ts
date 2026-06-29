@@ -31,6 +31,11 @@ export class UsersController {
     return this.users.getNutrition(user.id);
   }
 
+  @Get('me/export')
+  exportData(@CurrentUser() user: AuthUser) {
+    return this.users.exportData(user.id);
+  }
+
   @Delete('me/data')
   reset(@CurrentUser() user: AuthUser) {
     return this.users.resetData(user.id);

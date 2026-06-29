@@ -10,6 +10,7 @@ export interface ApiUser {
   age: number | null;
   weightKg: number | null;
   heightCm: number | null;
+  targetWeightKg: number | null;
   activityLevel: string | null;
   goal: string | null;
   goalIntensity: string | null;
@@ -124,6 +125,17 @@ export interface ProgressionPoint {
   maxWeight: number;
   e1rm: number;
   volume: number;
+}
+
+export interface CardioSession {
+  id: string;
+  date: string;
+  type: string;
+  durationMin: number;
+  distanceKm: number | null;
+  calories: number | null;
+  note: string | null;
+  createdAt: string;
 }
 
 export interface MealTemplateItem {

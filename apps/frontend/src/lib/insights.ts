@@ -182,3 +182,123 @@ export function suggestNextWeight(
   }
   return { weight: last.weight, increaseLoad: false };
 }
+
+// ---- Meta de peso (projeção de tendência) --------------------------------
+
+/** Dias entre duas datas YYYY-MM-DD (b − a). */
+function daysBetween(a: string, b: string): number {
+  return Math.round(
+    (new Date(`${b}T00:00:00`).getTime() - new Date(`${a}T00:00:00`).getTime()) /
+      86_400_000,
+  );
+}
+
+export type WeightProjectionStatus =
+  | 'reached' // já na meta (±0.2 kg)
+  | 'on_track' // a caminhar na direção certa
+  | 'wrong_way' // a afastar-se da meta
+  | 'stalled'; // sem variação relevante
+
+export interface WeightProjection {
+  /** Ritmo semanal (kg/sem), sinalizado: negativo = a descer. */
+  weeklyRate: number;
+  /** Data prevista para atingir a meta (null se parado / direção errada / >2 anos). */
+  etaDate: string | null;
+  /** Semanas estimadas até à meta (null nos mesmos casos). */
+  weeksToGo: number | null;
+  reached: boolean;
+  status: WeightProjectionStatus;
+}
+
+/**
+ * Projeta quando o peso-alvo será atingido, por regressão linear sobre os
+ * registos recentes (janela de `windowDays`, com recurso a todos se forem
+ * poucos). Devolve null sem dados suficientes (< 2 registos) ou meta inválida.
+ */
+export function weightProjection(
+  entries: { date: string; weightKg: number }[],
+  targetKg: number,
+  today = todayISO(),
+  windowDays = 56,
+): WeightProjection | null {
+  if (entries.length < 2 || !(targetKg > 0)) return null;
+
+  const cutoff = addDays(today, -windowDays);
+  let pts = entries.filter((e) => e.date.slice(0, 10) >= cutoff);
+  if (pts.length < 2) pts = entries;
+
+  const base = pts[0].date.slice(0, 10);
+  const xs = pts.map((e) => daysBetween(base, e.date.slice(0, 10)));
+  const ys = pts.map((e) => e.weightKg);
+  const n = pts.length;
+  const meanX = xs.reduce((a, b) => a + b, 0) / n;
+  const meanY = ys.reduce((a, b) => a + b, 0) / n;
+  let num = 0;
+  let den = 0;
+  for (let i = 0; i < n; i++) {
+    num += (xs[i] - meanX) * (ys[i] - meanY);
+    den += (xs[i] - meanX) ** 2;
+  }
+  const slopePerDay = den === 0 ? 0 : num / den;
+  const weeklyRate = Math.round(slopePerDay * 7 * 100) / 100;
+
+  const intercept = meanY - slopePerDay * meanX;
+  const trendToday = intercept + slopePerDay * daysBetween(base, today);
+  const remaining = targetKg - trendToday; // >0 falta subir; <0 falta descer
+
+  if (Math.abs(remaining) <= 0.2) {
+    return { weeklyRate, etaDate: today, weeksToGo: 0, reached: true, status: 'reached' };
+  }
+  if (Math.abs(slopePerDay) < 0.005) {
+    return { weeklyRate, etaDate: null, weeksToGo: null, reached: false, status: 'stalled' };
+  }
+  if (Math.sign(remaining) !== Math.sign(slopePerDay)) {
+    return { weeklyRate, etaDate: null, weeksToGo: null, reached: false, status: 'wrong_way' };
+  }
+  const days = remaining / slopePerDay;
+  if (days > 730) {
+    return { weeklyRate, etaDate: null, weeksToGo: null, reached: false, status: 'on_track' };
+  }
+  return {
+    weeklyRate,
+    etaDate: addDays(today, Math.round(days)),
+    weeksToGo: Math.max(1, Math.round(days / 7)),
+    reached: false,
+    status: 'on_track',
+  };
+}
+
+// ---- Volume por grupo muscular -------------------------------------------
+
+export interface MuscleVolume {
+  /** Chave do grupo (vazia = sem grupo definido). */
+  group: string;
+  volume: number;
+  sets: number;
+}
+
+/**
+ * Agrega o volume (carga × reps) e nº de séries por grupo muscular nas sessões
+ * dos últimos `sinceDays` dias. Ordenado por volume decrescente.
+ */
+export function volumeByMuscleGroup(
+  sessions: WorkoutSession[],
+  sinceDays = 30,
+  today = todayISO(),
+): MuscleVolume[] {
+  const cutoff = addDays(today, -(sinceDays - 1));
+  const map = new Map<string, { volume: number; sets: number }>();
+  for (const s of sessions) {
+    if (sessionDate(s) < cutoff) continue;
+    for (const set of s.sets) {
+      const g = set.muscleGroup ?? '';
+      const cur = map.get(g) ?? { volume: 0, sets: 0 };
+      cur.volume += (set.weight ?? 0) * (set.reps ?? 0);
+      cur.sets += 1;
+      map.set(g, cur);
+    }
+  }
+  return [...map.entries()]
+    .map(([group, v]) => ({ group, volume: Math.round(v.volume), sets: v.sets }))
+    .sort((a, b) => b.volume - a.volume || b.sets - a.sets);
+}

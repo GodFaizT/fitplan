@@ -44,6 +44,7 @@ export class UsersService {
         age: dto.age,
         weightKg: dto.weightKg,
         heightCm: dto.heightCm,
+        targetWeightKg: dto.targetWeightKg,
         activityLevel: dto.activityLevel,
         goal: dto.goal,
         goalIntensity: dto.goalIntensity,
@@ -84,6 +85,7 @@ export class UsersService {
         age: null,
         weightKg: null,
         heightCm: null,
+        targetWeightKg: null,
         activityLevel: null,
         goal: null,
         goalIntensity: null,
@@ -94,6 +96,84 @@ export class UsersService {
       },
     });
     return this.sanitize(saved);
+  }
+
+  /**
+   * Exporta todos os dados do utilizador num único objeto (backup / portabilidade).
+   * As imagens das fotos de progresso NÃO são incluídas — só os metadados — para
+   * manter o ficheiro leve.
+   */
+  async exportData(userId: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new NotFoundException('Utilizador não encontrado');
+
+    const [
+      weights,
+      measurements,
+      cardioSessions,
+      workoutSessions,
+      dailyLogs,
+      mealTemplates,
+      progressPhotos,
+    ] = await Promise.all([
+      this.prisma.weightEntry.findMany({
+        where: { userId },
+        orderBy: { date: 'asc' },
+      }),
+      this.prisma.bodyMeasurement.findMany({
+        where: { userId },
+        orderBy: { date: 'asc' },
+      }),
+      this.prisma.cardioSession.findMany({
+        where: { userId },
+        orderBy: { date: 'asc' },
+      }),
+      this.prisma.workoutSession.findMany({
+        where: { userId },
+        orderBy: { completedAt: 'asc' },
+        include: { sets: { orderBy: { position: 'asc' } } },
+      }),
+      this.prisma.dailyLog.findMany({
+        where: { userId },
+        orderBy: { date: 'asc' },
+        include: {
+          meals: {
+            orderBy: { position: 'asc' },
+            include: { items: { orderBy: { position: 'asc' } } },
+          },
+        },
+      }),
+      this.prisma.mealTemplate.findMany({
+        where: { userId },
+        include: { items: { orderBy: { position: 'asc' } } },
+      }),
+      this.prisma.progressPhoto.findMany({
+        where: { userId },
+        orderBy: { date: 'asc' },
+        select: {
+          id: true,
+          date: true,
+          note: true,
+          mimeType: true,
+          width: true,
+          height: true,
+          createdAt: true,
+        },
+      }),
+    ]);
+
+    return {
+      app: 'FitPlan',
+      exportedAt: new Date().toISOString(),
+      profile: this.sanitize(user),
+      weights,
+      measurements,
+      cardioSessions,
+      workoutSessions,
+      dailyLogs,
+      mealTemplates,
+      progressPhotos,
+    };
   }
 
   // ---- internos -----------------------------------------------------------

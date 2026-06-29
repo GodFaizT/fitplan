@@ -1,7 +1,7 @@
 'use client';
 
 import { useQueryClient } from '@tanstack/react-query';
-import { LogOut, RotateCcw } from 'lucide-react';
+import { Download, LogOut, RotateCcw } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -17,6 +17,7 @@ import { useUpdateProfile } from '@/hooks/use-nutrition';
 import { logoutRequest } from '@/lib/api';
 import { useAuthStore } from '@/lib/auth-store';
 import { api } from '@/lib/api';
+import { todayISO } from '@/lib/format';
 import { QUERY_CACHE_KEY } from '@/lib/query-keys';
 import { toast } from '@/lib/toast';
 
@@ -40,6 +41,7 @@ export default function SettingsPage() {
 
   const [name, setName] = useState(user?.name ?? '');
   const [confirmReset, setConfirmReset] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   async function saveName() {
     await update.mutateAsync({ name: name || null });
@@ -53,6 +55,29 @@ export default function SettingsPage() {
   async function changeTheme(next: 'dark' | 'light') {
     setTheme(next);
     await update.mutateAsync({ theme: next });
+  }
+
+  async function onExport() {
+    setExporting(true);
+    try {
+      const data = await api.get<unknown>('/users/me/export');
+      const blob = new Blob([JSON.stringify(data, null, 2)], {
+        type: 'application/json',
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `fitplan-${todayISO()}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      toast.success('Dados exportados');
+    } catch {
+      toast.error('Não foi possível exportar');
+    } finally {
+      setExporting(false);
+    }
   }
 
   async function onReset() {
@@ -142,6 +167,10 @@ export default function SettingsPage() {
       </Card>
 
       <Card className="flex flex-col gap-3">
+        <Button variant="secondary" onClick={onExport} disabled={exporting}>
+          <Download className="h-4 w-4" />{' '}
+          {exporting ? 'A exportar…' : 'Exportar os meus dados'}
+        </Button>
         <Button variant="secondary" onClick={() => setConfirmReset(true)}>
           <RotateCcw className="h-4 w-4" /> Repor dados pessoais
         </Button>

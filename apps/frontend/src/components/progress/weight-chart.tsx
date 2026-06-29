@@ -3,6 +3,7 @@
 import {
   Area,
   AreaChart,
+  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -19,11 +20,15 @@ interface Point {
 export default function WeightChart({
   points,
   unit,
+  target,
 }: {
   points: Point[];
   unit: string;
+  /** Linha de meta (no mesmo unit dos pontos). */
+  target?: number;
 }) {
   const values = points.map((p) => p.value);
+  if (target != null) values.push(target);
   const min = Math.min(...values);
   const max = Math.max(...values);
   const pad = Math.max(1, (max - min) * 0.15);
@@ -57,6 +62,20 @@ export default function WeightChart({
             cursor={{ stroke: 'var(--border)' }}
             content={<WeightTooltip unit={unit} />}
           />
+          {target != null ? (
+            <ReferenceLine
+              y={target}
+              stroke="var(--accent)"
+              strokeDasharray="4 4"
+              strokeOpacity={0.7}
+              label={{
+                value: `Meta ${fmt(target, 1)}`,
+                position: 'insideTopRight',
+                fill: 'var(--accent)',
+                fontSize: 10,
+              }}
+            />
+          ) : null}
           <Area
             type="monotone"
             dataKey="value"

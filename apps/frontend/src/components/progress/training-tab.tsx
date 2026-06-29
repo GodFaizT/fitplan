@@ -12,7 +12,12 @@ import {
   useSessions,
 } from '@/hooks/use-sessions';
 import { chartDate, fmt, todayISO } from '@/lib/format';
-import { type HeatCell, trainingHeatmap } from '@/lib/insights';
+import {
+  type HeatCell,
+  trainingHeatmap,
+  volumeByMuscleGroup,
+} from '@/lib/insights';
+import { muscleLabel } from '@/lib/labels';
 import type { WorkoutSession } from '@/lib/types';
 
 const MetricChart = dynamic(
@@ -72,6 +77,9 @@ export function TrainingTab() {
 
       {/* Consistência (heatmap dos últimos 3 meses) */}
       <ConsistencyHeatmap sessions={list} />
+
+      {/* Volume por grupo muscular (últimos 30 dias) */}
+      <MuscleVolume sessions={list} />
 
       {/* Recordes pessoais */}
       {prs.length > 0 ? (
@@ -141,6 +149,39 @@ export function TrainingTab() {
         </div>
       </div>
     </div>
+  );
+}
+
+/** Volume (carga × reps) por grupo muscular nos últimos 30 dias, em barras. */
+function MuscleVolume({ sessions }: { sessions: WorkoutSession[] }) {
+  const data = useMemo(() => volumeByMuscleGroup(sessions, 30), [sessions]);
+  if (data.length === 0) return null;
+  const max = Math.max(...data.map((d) => d.volume), 1);
+
+  return (
+    <Card className="flex flex-col gap-3">
+      <SectionTitle className="text-[15px]">Volume por grupo · 30 dias</SectionTitle>
+      <div className="flex flex-col gap-2.5">
+        {data.map((d) => (
+          <div key={d.group || '—'}>
+            <div className="mb-1 flex items-center justify-between text-[13px]">
+              <span className="min-w-0 truncate">
+                {d.group ? muscleLabel(d.group) : 'Sem grupo'}
+              </span>
+              <span className="stat shrink-0 text-text-muted">
+                {d.volume > 0 ? `${fmt(d.volume)} kg` : `${d.sets} séries`}
+              </span>
+            </div>
+            <div className="h-2 w-full overflow-hidden rounded-pill bg-surface-2">
+              <div
+                className="h-full rounded-pill bg-accent"
+                style={{ width: `${Math.max(4, (d.volume / max) * 100)}%` }}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+    </Card>
   );
 }
 

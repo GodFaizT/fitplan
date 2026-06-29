@@ -5,6 +5,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AdminModule } from './admin/admin.module';
 import { AuthModule } from './auth/auth.module';
+import { CardioModule } from './cardio/cardio.module';
 import { validateEnv } from './config/env.validation';
 import { ExercisesModule } from './exercises/exercises.module';
 import { FoodsModule } from './foods/foods.module';
@@ -40,6 +41,7 @@ import { WorkoutsModule } from './workouts/workouts.module';
     WeightsModule,
     MeasurementsModule,
     SessionsModule,
+    CardioModule,
     ProgressPhotosModule,
     NotificationsModule,
     SeedModule,

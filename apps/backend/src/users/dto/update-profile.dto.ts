@@ -23,6 +23,7 @@ export class UpdateProfileDto {
   @IsOptional() @IsInt() @Min(10) @Max(120) age?: number;
   @IsOptional() @IsNumber() @Min(20) @Max(400) weightKg?: number;
   @IsOptional() @IsNumber() @Min(80) @Max(260) heightCm?: number;
+  @IsOptional() @IsNumber() @Min(20) @Max(400) targetWeightKg?: number;
   @IsOptional() @IsIn(ACTIVITY) activityLevel?: string;
   @IsOptional() @IsIn(GOALS) goal?: string;
   @IsOptional() @IsIn(INTENSITY) goalIntensity?: string;
