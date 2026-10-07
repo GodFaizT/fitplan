@@ -92,6 +92,9 @@ export class FoodVisionService {
       ? `Analisa esta refeição. Pista do utilizador: ${dto.hint.trim()}`
       : 'Analisa esta refeição e estima os alimentos e macros visíveis.';
 
+    // HTTP-Referer é opcional (só serve para atribuição no OpenRouter)
+    const referer = this.config.get<string>('OPENROUTER_REFERER');
+
     let res: Awaited<ReturnType<typeof fetch>>;
     try {
       res = await fetch(OPENROUTER_URL, {
@@ -99,9 +102,7 @@ export class FoodVisionService {
         headers: {
           Authorization: `Bearer ${key}`,
           'Content-Type': 'application/json',
-          'HTTP-Referer':
-            this.config.get<string>('OPENROUTER_REFERER') ||
-            'https://appfit.tomasdev.me',
+          ...(referer ? { 'HTTP-Referer': referer } : {}),
           'X-Title': 'FitPlan',
         },
         body: JSON.stringify({

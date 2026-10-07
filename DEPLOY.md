@@ -50,17 +50,17 @@ Variáveis de ambiente:
 
 Aplicação a partir do Git, build pelo `apps/frontend/Dockerfile`.
 
-- **Build arg** `NEXT_PUBLIC_API_URL` = `https://api.oteudominio.com/api`
-  (é embebido no bundle em build-time, por isso tem de ser um *build arg*, não só env de runtime).
-- **Build arg** `NEXT_PUBLIC_VAPID_PUBLIC_KEY` = a mesma chave pública VAPID do
-  backend (também embebida em build-time — sem ela, as notificações ficam
-  desligadas no cliente).
+- **Env** `API_URL` = `https://api.oteudominio.com/api`
+  (lida em runtime e servida ao browser em `/env.js` — não é preciso build arg;
+  mudar o valor só exige reiniciar o container, não rebuild).
+- **Env** `VAPID_PUBLIC_KEY` = a mesma chave pública VAPID do backend (sem ela,
+  as notificações ficam desligadas no cliente).
 - Associa o domínio principal (ex: `app.oteudominio.com`) com HTTPS.
 
 ## 4. Notificações (opcional)
 
-1. Define as `VAPID_*` no backend e a `NEXT_PUBLIC_VAPID_PUBLIC_KEY` (a mesma
-   chave pública) no build do frontend.
+1. Define as `VAPID_*` no backend e a `VAPID_PUBLIC_KEY` (a mesma chave
+   pública) no env do frontend.
 2. No telemóvel: abre o site → **instala a PWA** no ecrã principal.
 3. *Definições* → **Ativar notificações** → **Enviar teste**.
 
@@ -89,9 +89,9 @@ nem funciona offline (exige HTTPS). O login funciona se desativares o cookie Sec
   COOKIE_SECURE=false
   PORT=3001
   ```
-- **Frontend** build arg:
+- **Frontend** env:
   ```
-  NEXT_PUBLIC_API_URL=http://IP-DO-VPS:3001/api
+  API_URL=http://IP-DO-VPS:3001/api
   ```
 - Acede em `http://IP-DO-VPS:3000`.
 

@@ -1,8 +1,7 @@
 'use client';
 
 import { api } from './api';
-
-const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? '';
+import { vapidPublicKey } from './runtime-env';
 
 export function pushSupported(): boolean {
   return (
@@ -10,7 +9,7 @@ export function pushSupported(): boolean {
     'serviceWorker' in navigator &&
     'PushManager' in window &&
     'Notification' in window &&
-    VAPID_PUBLIC_KEY.length > 0
+    vapidPublicKey().length > 0
   );
 }
 
@@ -40,7 +39,7 @@ export async function enablePush(): Promise<boolean> {
   const reg = await navigator.serviceWorker.ready;
   const sub = await reg.pushManager.subscribe({
     userVisibleOnly: true,
-    applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY) as BufferSource,
+    applicationServerKey: urlBase64ToUint8Array(vapidPublicKey()) as BufferSource,
   });
   const json = sub.toJSON();
   await api.post('/notifications/subscribe', {

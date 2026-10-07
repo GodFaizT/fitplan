@@ -11,13 +11,9 @@ RUN npm ci
 COPY packages/shared packages/shared
 RUN npm run build -w @fitplan/shared
 COPY apps/frontend apps/frontend
-# NEXT_PUBLIC_* é embebido no bundle em build-time.
-# Default aponta para o backend no subdomínio próprio (apifit.tomasdev.me).
-ARG NEXT_PUBLIC_API_URL=https://apifit.tomasdev.me/api
-ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
-# Chave pública VAPID (notificações) — embebida no bundle em build-time.
-ARG NEXT_PUBLIC_VAPID_PUBLIC_KEY=BIMOEYPMfrArq4z1T_rd4hK1oqUdOTsNnWCF7uL5gYZ9qHauc2vK1BItagX1nJqcI9mQ_8VZEdBf7jDSo5jlmVo
-ENV NEXT_PUBLIC_VAPID_PUBLIC_KEY=$NEXT_PUBLIC_VAPID_PUBLIC_KEY
+# URL da API e chave VAPID não são embebidos no build: o frontend lê-os em
+# runtime das variáveis de ambiente API_URL e VAPID_PUBLIC_KEY (servidas em
+# /env.js). A mesma imagem serve qualquer domínio.
 RUN npm run build -w @fitplan/frontend
 
 # ---- runtime ----

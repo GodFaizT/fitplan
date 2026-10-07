@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter, JetBrains_Mono } from 'next/font/google';
+import Script from 'next/script';
 import { InstallPrompt } from '@/components/pwa/install-prompt';
 import { Providers } from '@/components/providers';
 import { Toaster } from '@/components/ui/toaster';
@@ -59,6 +60,8 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}
       >
+        {/* Config de runtime (URL da API, chave VAPID) — tem de correr antes da app */}
+        <Script src="/env.js" strategy="beforeInteractive" />
         <Providers>{children}</Providers>
         <InstallPrompt />
         <Toaster />

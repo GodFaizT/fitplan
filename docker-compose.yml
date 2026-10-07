@@ -27,6 +27,9 @@ services:
       USE_REFRESH_COOKIE: "true"
       ADMIN_EMAIL: ${ADMIN_EMAIL:-}
       OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-}
+      VAPID_SUBJECT: ${VAPID_SUBJECT:-}
     depends_on:
       - postgres
     ports:
@@ -37,9 +40,9 @@ services:
     build:
       context: .
       dockerfile: apps/frontend/Dockerfile
-      args:
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001/api}
-        NEXT_PUBLIC_VAPID_PUBLIC_KEY: ${NEXT_PUBLIC_VAPID_PUBLIC_KEY:-}
+    environment:
+      API_URL: ${API_URL:-http://localhost:3001/api}
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
     depends_on:
       - backend
     ports:

@@ -1,8 +1,6 @@
 import { useAuthStore } from './auth-store';
+import { apiUrl } from './runtime-env';
 import type { AuthResponse } from './types';
-
-const API_URL =
-  process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api';
 
 export class ApiError extends Error {
   constructor(
@@ -28,7 +26,7 @@ function tryRefresh(): Promise<boolean> {
   if (refreshInFlight) return refreshInFlight;
   refreshInFlight = (async () => {
     try {
-      const res = await fetch(`${API_URL}/auth/refresh`, {
+      const res = await fetch(`${apiUrl()}/auth/refresh`, {
         method: 'POST',
         credentials: 'include',
       });
@@ -61,7 +59,7 @@ export async function apiFetch<T>(
     headers.set('Content-Type', 'application/json');
   }
 
-  const res = await fetch(`${API_URL}${path}`, {
+  const res = await fetch(`${apiUrl()}${path}`, {
     ...options,
     headers,
     credentials: 'include',
@@ -103,7 +101,7 @@ export async function apiFetchBlob(path: string, retry = true): Promise<Blob> {
   const headers = new Headers();
   if (token) headers.set('Authorization', `Bearer ${token}`);
 
-  const res = await fetch(`${API_URL}${path}`, {
+  const res = await fetch(`${apiUrl()}${path}`, {
     headers,
     credentials: 'include',
   });
@@ -146,7 +144,7 @@ export async function loginRequest(
   email: string,
   password: string,
 ): Promise<AuthResponse> {
-  const res = await fetch(`${API_URL}/auth/login`, {
+  const res = await fetch(`${apiUrl()}/auth/login`, {
     method: 'POST',
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
@@ -164,7 +162,7 @@ export async function registerRequest(
   password: string,
   name?: string,
 ): Promise<AuthResponse | { pending: true }> {
-  const res = await fetch(`${API_URL}/auth/register`, {
+  const res = await fetch(`${apiUrl()}/auth/register`, {
     method: 'POST',
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
@@ -183,10 +181,10 @@ export async function registerRequest(
 }
 
 export async function logoutRequest(): Promise<void> {
-  await fetch(`${API_URL}/auth/logout`, {
+  await fetch(`${apiUrl()}/auth/logout`, {
     method: 'POST',
     credentials: 'include',
   });
 }
 
-export { API_URL };
+export { apiUrl };
