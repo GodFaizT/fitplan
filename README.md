@@ -2,7 +2,7 @@
 
 **Self-hosted personal fitness platform: nutrition calculator, meal logging and workout plans in one installable PWA.**
 
-[![CI](https://github.com/GodFaizT/fitplan/actions/workflows/ci.yml/badge.svg)](https://github.com/GodFaizT/fitplan/actions/workflows/ci.yml)
+[![CI](https://github.com/GodFaizT/FitPlan/actions/workflows/ci.yml/badge.svg)](https://github.com/GodFaizT/FitPlan/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-6EE7B7.svg)](./LICENSE)
 ![Next.js](https://img.shields.io/badge/Next.js-000?logo=nextdotjs&logoColor=white)
 ![NestJS](https://img.shields.io/badge/NestJS-E0234E?logo=nestjs&logoColor=white)
@@ -67,8 +67,8 @@ apps/
 ### Quick start (Docker)
 
 ```bash
-git clone https://github.com/GodFaizT/fitplan.git
-cd fitplan
+git clone https://github.com/GodFaizT/FitPlan.git
+cd FitPlan
 cp .env.example .env
 # Fill in POSTGRES_PASSWORD, JWT_ACCESS_SECRET, JWT_REFRESH_SECRET (openssl rand -hex 32)
 # and ADMIN_EMAIL (the account you register with becomes the admin)
@@ -127,8 +127,8 @@ O FitPlan é uma app de fitness multi-utilizador que corres no teu próprio serv
 ### Arranque rápido
 
 ```bash
-git clone https://github.com/GodFaizT/fitplan.git
-cd fitplan
+git clone https://github.com/GodFaizT/FitPlan.git
+cd FitPlan
 cp .env.example .env   # preenche as passwords, os segredos JWT e o ADMIN_EMAIL
 docker compose up --build
 ```
