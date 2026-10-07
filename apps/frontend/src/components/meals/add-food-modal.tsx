@@ -1,18 +1,29 @@
 'use client';
 
 import { scaleNutrition } from '@fitplan/shared';
-import { ArrowLeft, ChevronDown, Plus, ScanBarcode, Search } from 'lucide-react';
-import { useState } from 'react';
+import {
+  ArrowLeft,
+  Camera,
+  ChevronDown,
+  Plus,
+  ScanBarcode,
+  Search,
+  Sparkles,
+} from 'lucide-react';
+import { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Field, Input } from '@/components/ui/input';
 import { Modal } from '@/components/ui/modal';
 import { NumberInput } from '@/components/ui/number-input';
+import { useAnalyzeFood, useFoodVisionEnabled } from '@/hooks/use-food-vision';
 import { useFoodLibrary, useFoodMutations, useSavedFoods } from '@/hooks/use-foods';
 import { useRecentFoods } from '@/hooks/use-meals';
 import { foodIcon } from '@/lib/food-icon';
 import { fmt } from '@/lib/format';
+import { compressImage } from '@/lib/image';
 import { lookupBarcode } from '@/lib/open-food-facts';
 import { toast } from '@/lib/toast';
+import type { DetectedFood } from '@/lib/types';
 import { BarcodeScanner } from './barcode-scanner';
 
 export interface NewFoodItem {
@@ -56,6 +67,14 @@ export function AddFoodModal({
   const recent = useRecentFoods();
   const { create } = useFoodMutations();
 
+  const vision = useFoodVisionEnabled();
+  const visionEnabled = vision.data?.enabled ?? false;
+  const analyze = useAnalyzeFood();
+  const photoRef = useRef<HTMLInputElement>(null);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [detected, setDetected] = useState<DetectedFood[] | null>(null);
+  const [activeDetected, setActiveDetected] = useState<DetectedFood | null>(null);
+
   // 'search' = encontrar o alimento · 'detail' = quantidade + adicionar
   const [stage, setStage] = useState<'search' | 'detail'>('search');
   const [manual, setManual] = useState(false); // alimento criado/editado à mão
@@ -88,6 +107,9 @@ export function AddFoodModal({
     setQuantity(100);
     setSaveToLib(false);
     setSearch('');
+    setAnalyzing(false);
+    setDetected(null);
+    setActiveDetected(null);
   }
 
   function close() {
@@ -111,6 +133,7 @@ export function AddFoodModal({
     setManual(false);
     setShowValues(false);
     setSaveToLib(false);
+    setActiveDetected(null);
     setStage('detail');
   }
 
@@ -119,6 +142,45 @@ export function AddFoodModal({
     setManual(true);
     setShowValues(true);
     setSaveToLib(true);
+    setActiveDetected(null);
+    setStage('detail');
+  }
+
+  async function onPhoto(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    setDetected(null);
+    setAnalyzing(true);
+    try {
+      const img = await compressImage(file, 1080, 0.8);
+      const res = await analyze.mutateAsync(img.dataUrl);
+      if (res.items.length === 0) {
+        toast.error('Não reconheci alimentos nesta foto');
+      } else {
+        setDetected(res.items);
+      }
+    } catch {
+      toast.error('Não foi possível analisar a foto');
+    } finally {
+      setAnalyzing(false);
+    }
+  }
+
+  function selectDetected(d: DetectedFood) {
+    fill({
+      name: d.name,
+      per: d.quantity,
+      unit: d.unit,
+      calories: d.calories,
+      protein: d.protein,
+      carbs: d.carbs,
+      fat: d.fat,
+    });
+    setManual(true);
+    setShowValues(true);
+    setSaveToLib(false);
+    setActiveDetected(d);
     setStage('detail');
   }
 
@@ -135,6 +197,7 @@ export function AddFoodModal({
     setManual(true);
     setShowValues(false);
     setSaveToLib(true);
+    setActiveDetected(null);
     setStage('detail');
     toast.success('Produto encontrado');
   }
@@ -164,6 +227,18 @@ export function AddFoodModal({
         carbs: r1(scaled.carbs),
         fat: r1(scaled.fat),
       });
+      // Vindo de uma foto com vários alimentos: remove o que foi adicionado e
+      // volta à lista se ainda sobrarem itens (modal permanece aberto).
+      if (activeDetected) {
+        const rest = (detected ?? []).filter((d) => d !== activeDetected);
+        setActiveDetected(null);
+        if (rest.length > 0) {
+          setDetected(rest);
+          setStage('search');
+          return;
+        }
+        setDetected(null);
+      }
       close();
     } finally {
       setBusy(false);
@@ -197,9 +272,60 @@ export function AddFoodModal({
             >
               <ScanBarcode className="h-5 w-5" />
             </button>
+            {visionEnabled ? (
+              <button
+                type="button"
+                onClick={() => photoRef.current?.click()}
+                disabled={analyzing}
+                aria-label="Analisar foto da refeição"
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-line bg-surface-2 text-accent transition hover:bg-surface disabled:opacity-50"
+              >
+                <Camera className="h-5 w-5" />
+              </button>
+            ) : null}
           </div>
+
+          <input
+            ref={photoRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={onPhoto}
+          />
+
           {looking ? (
             <p className="-mt-2 text-[12px] text-text-muted">A procurar produto…</p>
+          ) : null}
+          {analyzing ? (
+            <p className="-mt-2 flex items-center gap-1.5 text-[12px] text-accent">
+              <Sparkles className="h-3.5 w-3.5 animate-pulse" /> A analisar a foto…
+            </p>
+          ) : null}
+
+          {detected && detected.length > 0 ? (
+            <div>
+              <p className="mb-1.5 flex items-center gap-1 text-[12px] uppercase tracking-[0.04em] text-text-muted">
+                <Sparkles className="h-3.5 w-3.5 text-accent" /> Detetado na foto
+              </p>
+              <div className="overflow-hidden rounded-xl border border-line">
+                {detected.map((d, i) => (
+                  <button
+                    key={`${d.name}-${i}`}
+                    onClick={() => selectDetected(d)}
+                    className="flex w-full items-center justify-between gap-2 border-b border-line px-3 py-2.5 text-left text-sm last:border-0 hover:bg-surface-2"
+                  >
+                    <span className="min-w-0 truncate">{d.name}</span>
+                    <span className="stat shrink-0 text-text-muted">
+                      {fmt(d.calories)} kcal / {fmt(d.quantity)}
+                      {d.unit}
+                    </span>
+                  </button>
+                ))}
+              </div>
+              <p className="mt-1.5 text-[11px] text-text-muted">
+                Estimativas por IA — toca para confirmar e ajustar antes de adicionar.
+              </p>
+            </div>
           ) : null}
 
           {!search && (recent.data?.length ?? 0) > 0 ? (
@@ -272,7 +398,10 @@ export function AddFoodModal({
       ) : (
         <div className="flex flex-col gap-4">
           <button
-            onClick={() => setStage('search')}
+            onClick={() => {
+              setActiveDetected(null);
+              setStage('search');
+            }}
             className="-mt-1 inline-flex items-center gap-1.5 self-start text-sm text-text-muted transition hover:text-text"
           >
             <ArrowLeft className="h-4 w-4" /> Outro alimento

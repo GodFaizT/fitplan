@@ -9,6 +9,7 @@ import { CardioModule } from './cardio/cardio.module';
 import { validateEnv } from './config/env.validation';
 import { ExercisesModule } from './exercises/exercises.module';
 import { FoodsModule } from './foods/foods.module';
+import { FoodVisionModule } from './food-vision/food-vision.module';
 import { MealsModule } from './meals/meals.module';
 import { MealTemplatesModule } from './meal-templates/meal-templates.module';
 import { MeasurementsModule } from './measurements/measurements.module';
@@ -34,6 +35,7 @@ import { WorkoutsModule } from './workouts/workouts.module';
     AdminModule,
     UsersModule,
     FoodsModule,
+    FoodVisionModule,
     MealsModule,
     MealTemplatesModule,
     ExercisesModule,

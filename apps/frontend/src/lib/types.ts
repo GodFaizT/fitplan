@@ -190,6 +190,18 @@ export interface SavedFood {
   fat: number;
 }
 
+/** Alimento detetado por IA numa foto (valores para a porção estimada). */
+export interface DetectedFood {
+  name: string;
+  quantity: number;
+  unit: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  confidence: number;
+}
+
 /** Alimento usado recentemente (valores já para a quantidade registada). */
 export interface RecentFood {
   name: string;
