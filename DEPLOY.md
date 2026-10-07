@@ -29,7 +29,7 @@ Variáveis de ambiente:
 | `ADMIN_EMAIL` | o teu email (fica admin + aprovado automaticamente) |
 | `VAPID_PUBLIC_KEY` | (opcional, notificações) `npx web-push generate-vapid-keys` |
 | `VAPID_PRIVATE_KEY` | (opcional, notificações) |
-| `VAPID_SUBJECT` | `mailto:faiz@admfit.pt` |
+| `VAPID_SUBJECT` | `mailto:admin@oteudominio.com` |
 
 - ⚠️ A API **recusa arrancar** sem `JWT_ACCESS_SECRET` forte (≥32 caracteres,
   não um valor de exemplo). Gera com `openssl rand -hex 32`.
